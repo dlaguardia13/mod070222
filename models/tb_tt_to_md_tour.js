@@ -50,6 +50,61 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tb_tt_to_as_tour_ip',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_group_descount, {
+        as: 'tb_tt_to_group_descount',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+      
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_itinerary, {
+        as: 'models.tb_tt_to_itinerary',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_price_type, {
+        as: 'tb_tt_to_price_type',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_days_av_per_year, {
+        as: 'tb_tt_to_days_av_per_year',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_av_for_months, {
+        as: 'tb_tt_to_av_for_months',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_expertis, {
+        as: 'tb_tt_to_as_tour_cm_expertis',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_whant, {
+        as: 'tb_tt_to_as_tour_cm_whant',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_difficult, {
+        as: 'tb_tt_to_as_tour_cm_difficult',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_suit_to, {
+        as: 'tb_tt_to_as_tour_cm_suit_to',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_you_will_see, {
+        as: 'tb_tt_to_you_will_see',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+      
+      tb_tt_to_md_tour.hasMany(models.tb_tt_ed_schedules, {
+        as: 'tb_tt_ed_schedules',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
     }
   }
   tb_tt_to_md_tour.init({

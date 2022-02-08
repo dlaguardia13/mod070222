@@ -1,4 +1,5 @@
 'use strict';
+const { model } = require('mongoose');
 const {
   Model, UUIDV4
 } = require('sequelize');
@@ -11,6 +12,27 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_expertis, {
+        as: 'tb_tt_to_as_tour_cm_expertis',
+        foreignKey: 'tb_gcm_complement_complement_id'
+      })
+
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_whant, {
+        as: 'tb_tt_to_as_tour_cm_whant',
+        foreignKey: 'tb_gcm_complement_complement_id'
+      })
+
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_difficult, {
+        as: 'tb_tt_to_as_tour_cm_difficult',
+        foreignKey: 'tb_gcm_complement_complement_id'
+      })
+
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_suit_to, {
+        as: 'tb_tt_to_as_tour_cm_suit_to',
+        foreignKey: 'tb_gcm_complement_complement_id'
+      })
+
+
     }
   }
   tb_gcm_complement.init({
