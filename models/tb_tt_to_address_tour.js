@@ -25,6 +25,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tb_gcm_state',
         foreignKey: 'tb_gcm_state_state_id'
       })
+
+      tb_tt_to_address_tour.belongsTo(models.tb_gcm_city, {
+        as: 'tb_gcm_city',
+        foreignKey: 'tb_gcm_city_city_id'
+      })
     }
   }
   tb_tt_to_address_tour.init({

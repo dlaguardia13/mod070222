@@ -1,11 +1,11 @@
 'use strict';
-//import sequelizeSlugify from 'sequelize-slugify';
+//import SequelizeSlugify from 'sequelize-slugify';
 
 const {
   Model, UUIDV4
 } = require('sequelize');
 
-const  sequelizeSlugify = require('sequelize-slugify')
+const  SequelizeSlugify = require('sequelize-slugify')
 
 module.exports = (sequelize, DataTypes) => {
   class tb_tt_to_md_tour extends Model {
@@ -129,7 +129,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     slug: {
       type: DataTypes.STRING,
-      //unique: true
+      unique: true
     },
     name: {
       type: DataTypes.STRING,
@@ -175,7 +175,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'tb_tt_to_md_tour',
   });
 
-  sequelizeSlugify.slugifyModel(tb_tt_to_md_tour,{
+  SequelizeSlugify.slugifyModel(tb_tt_to_md_tour,{
     source: ['name'],
     slugOptions: { lower: true },
     overwrite: true,

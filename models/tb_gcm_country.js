@@ -58,6 +58,9 @@ module.exports = (sequelize, DataTypes) => {
     active_user: DataTypes.STRING
   }, {
     sequelize,
+    timestamps: true,
+    paranoid: true,
+    freezeTableName: true,
     modelName: 'tb_gcm_country',
   });
   return tb_gcm_country;

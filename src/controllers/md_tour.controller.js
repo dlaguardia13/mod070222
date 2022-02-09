@@ -3,18 +3,23 @@ import { rows } from "pg/lib/defaults"
 const Md_tour = require("../../models").tb_tt_to_md_tour
 
 export async function createTour(req, res) {
-    const { name, title, description, tb_bp_md_business_profile_id, tb_gcm_status_status_id }
+    const { tb_bp_md_business_profile_id, tb_gcm_status_status_id,name, title, description,capacity,flexible_schedules,enabled,removed }
         = req.body
     try {
         let newTour = await Md_tour.create({
-            name,
-            title,
+            tb_bp_md_business_profile_id, 
+            tb_gcm_status_status_id,
+            name, 
+            title, 
             description,
-            tb_bp_md_business_profile_id,
-            tb_gcm_status_status_id
+            capacity,
+            flexible_schedules,
+            enabled,
+            removed
         },
             {
-                fields: ['name', 'title', 'description', 'tb_bp_md_business_profile_id', 'tb_gcm_status_status_id']
+                fields: [ 'tb_bp_md_business_profile_id', 'tb_gcm_status_status_id','name', 'title', 'description',
+                'capacity', 'flexible_schedules', 'enabled', 'removed']
             })
         if (newTour) {
             res.json({
@@ -32,7 +37,7 @@ export async function createTour(req, res) {
 export async function getAllTours(req, res) {
     try {
         const AllTours = await Md_tour.findAndCountAll({
-            attributes: ['name', 'title', 'description']
+            attributes: ['name', 'title', 'description','slug']
         })
         if (AllTours) {
             res.json({
