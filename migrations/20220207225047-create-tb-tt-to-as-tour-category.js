@@ -21,7 +21,9 @@ module.exports = {
         references: {
           model: 'tb_gcm_category',
           key: 'category_id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       enabled: {
         type: Sequelize.CHAR,

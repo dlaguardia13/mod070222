@@ -1,17 +1,19 @@
-const express = require('express')
-const morgan = require('morgan')
+import express, { json } from 'express'
+import morgan from 'morgan'
+import md_tour_rt from "./routes/md_tour.routes"
+
 const app = express()
 
-const PORT = 3000
+
 
 //Middleware
+app.use(morgan('dev'))
+app.use(json())
 
 //Routes
+app.use("/api/md_tour", md_tour_rt)
 
-app.listen(PORT, () => {
-    console.log(`App is runing: ${PORT}`)
-})
-
+export default app;
 
 
 

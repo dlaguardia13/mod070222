@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   tb_gcm_language.init({
     language_id: {
-      type: DataTypes.UIID,
+      type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
       defaultValue: UUIDV4

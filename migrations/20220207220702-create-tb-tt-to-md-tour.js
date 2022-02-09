@@ -5,7 +5,7 @@ module.exports = {
       tour_id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize,UUID
+        type: Sequelize.UUID
       },
       tb_gcm_status_status_id: {
         type: Sequelize.UUID,
@@ -13,7 +13,9 @@ module.exports = {
         references: {
           model: 'tb_gcm_status',
           key: 'status_id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       tb_bp_md_business_profile_id: {
         type: Sequelize.UUID,
@@ -21,7 +23,9 @@ module.exports = {
         references: {
           model: 'tb_bp_md_business_profile',
           key: 'business_profile_id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       slug: {
         type: Sequelize.STRING
@@ -37,8 +41,7 @@ module.exports = {
         type: Sequelize.TEXT
       },
       capacity: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+        type: Sequelize.INTEGER
       },
       product_type: {
         type: Sequelize.INTEGER
@@ -50,8 +53,7 @@ module.exports = {
         type: Sequelize.CHAR
       },
       flexible_schedules: {
-        type: Sequelize.CHAR,
-        allowNull: false
+        type: Sequelize.CHAR
       },
       price: {
         type: Sequelize.NUMERIC
@@ -76,11 +78,11 @@ module.exports = {
       },
       enabled: {
         type: Sequelize.CHAR,
-        allowNull: false
+        //allowNull: false
       },
       removed: {
         type: Sequelize.CHAR,
-        allowNull: false
+        //allowNull: false
       },
       mg_tour_id: {
         type: Sequelize.STRING
@@ -95,11 +97,11 @@ module.exports = {
         type: Sequelize.STRING
       },
       createdAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE
       },
       updatedAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE
       },
       deletedAt: {

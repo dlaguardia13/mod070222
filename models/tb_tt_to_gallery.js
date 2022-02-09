@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      tb_tt_to_gallery.belongsTo(mddels.tb_tt_to_md_tour ,{
+      tb_tt_to_gallery.belongsTo(models.tb_tt_to_md_tour ,{
         as: 'tb_tt_to_md_tour',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })

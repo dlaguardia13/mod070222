@@ -36,20 +36,25 @@ module.exports = {
         allowNull: false
       },
       createdAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE
       },
       updatedAt: {
-        allowNull: false,
+        allowNull: true,
+        type: Sequelize.DATE
+      },
+      deletedAt: {
+        allowNull: true,
+        defaultValue: null,
         type: Sequelize.DATE
       }
     }, {
-        timestamps: true,
-        paranoid: true,
-        underscored: true,
-        freezeTableName: true,
-        tableName: 'tb_tt_to_as_tour_language'
-      });
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      freezeTableName: true,
+      tableName: 'tb_tt_to_as_tour_language'
+    });
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('tb_tt_to_as_tour_language');

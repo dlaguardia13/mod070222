@@ -1,7 +1,12 @@
 'use strict';
+//import sequelizeSlugify from 'sequelize-slugify';
+
 const {
   Model, UUIDV4
 } = require('sequelize');
+
+const  sequelizeSlugify = require('sequelize-slugify')
+
 module.exports = (sequelize, DataTypes) => {
   class tb_tt_to_md_tour extends Model {
     /**
@@ -26,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
-      tb_tt_to_md_tour.hasMany(models.tb_tt_to_address, {
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_address_tour, {
         as: 'tb_tt_to_address',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
@@ -51,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
-      tb_tt_to_md_tour.hasMany(models.tb_tt_to_group_descount, {
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_group_discount, {
         as: 'tb_tt_to_group_descount',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
@@ -122,7 +127,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false
     },
-    slug: DataTypes.STRING,
+    slug: {
+      type: DataTypes.STRING,
+      //unique: true
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false
@@ -166,5 +174,14 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true,
     modelName: 'tb_tt_to_md_tour',
   });
+
+  sequelizeSlugify.slugifyModel(tb_tt_to_md_tour,{
+    source: ['name'],
+    slugOptions: { lower: true },
+    overwrite: true,
+    column: 'slug',
+    incrementalReplacement: '-'
+  })
+
   return tb_tt_to_md_tour;
 };
