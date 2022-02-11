@@ -1,5 +1,4 @@
-const State = require('../../models').tb_gcm_state
-const Country = require("../../models").tb_gcm_country
+const State = require('../../../models').tb_gcm_state
 
 
 export async function getAllStates(req, res) {

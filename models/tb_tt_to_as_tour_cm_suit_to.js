@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
 
       tb_tt_to_as_tour_cm_suit_to.belongsTo(models.tb_gcm_complement ,{
         as: 'tb_gcm_complement',
-        foreignKey: 'tb_gcm_complement_complement_id'
+        foreignKey: 'tb_gcm_cm_complement_id'
       })
     }
   }
@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false
     },
-    tb_gcm_complement_complement_id: {
+    tb_gcm_cm_complement_id: {
       type: DataTypes.UUID,
       allowNull: false
     },

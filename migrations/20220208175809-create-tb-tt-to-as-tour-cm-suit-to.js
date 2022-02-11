@@ -17,7 +17,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      tb_gcm_complement_complement_id: {
+      tb_gcm_cm_complement_id: {
         type: Sequelize.UUID,
         llowNull: false,
         references: {

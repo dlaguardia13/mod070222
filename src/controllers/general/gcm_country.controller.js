@@ -1,7 +1,5 @@
-import { statement_timeout } from "pg/lib/defaults"
-
-const Country = require("../../models").tb_gcm_country
-const State = require("../../models").tb_gcm_state
+const Country = require("../../../models").tb_gcm_country
+const State = require("../../../models").tb_gcm_state
 
 export async function getAllCountries(req, res){
     try {

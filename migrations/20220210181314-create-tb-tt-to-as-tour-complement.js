@@ -1,8 +1,8 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tb_tt_to_as_tour_cm_difficult', {
-      cm_difficult_id: {
+    await queryInterface.createTable('tb_tt_to_as_tour_complement', {
+      as_tour_complement_id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID
@@ -17,23 +17,15 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      tb_gcm_cm_complement_id: {
+      tb_gcm_complement_complement_id: {
         type: Sequelize.UUID,
-        llowNull: false,
+        allowNull: false,
         references: {
           model: 'tb_gcm_complement',
           key: 'complement_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
-      },
-      enabled: {
-        type: Sequelize.CHAR,
-        allowNull: false
-      },
-      removed: {
-        type: Sequelize.CHAR,
-        allowNull: false
       },
       createdAt: {
         allowNull: true,
@@ -53,10 +45,10 @@ module.exports = {
       paranoid: true,
       underscored: true,
       freezeTableName: true,
-      tableName: 'tb_tt_to_as_tour_cm_difficult'
+      tableName: 'tb_tt_to_as_tour_complement'
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tb_tt_to_as_tour_cm_difficult');
+    await queryInterface.dropTable('tb_tt_to_as_tour_complement');
   }
 };

@@ -1,4 +1,4 @@
-const City = require('../../models').tb_gcm_city
+const City = require('../../../models').tb_gcm_city
 
 export async function getAllCities(req, res) {
     const { state_id } = req.params

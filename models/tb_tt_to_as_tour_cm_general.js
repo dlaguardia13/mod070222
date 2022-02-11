@@ -1,9 +1,10 @@
 'use strict';
+const { all } = require('express/lib/application');
 const {
   Model, UUIDV4
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class tb_tt_to_as_tour_cm_difficult extends Model {
+  class tb_tt_to_as_tour_cm_general extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,22 +12,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      tb_tt_to_as_tour_cm_difficult.belongsTo(models.tb_tt_to_md_tour ,{
+      tb_tt_to_as_tour_cm_general.belongsTo(models.tb_tt_to_md_tour, {
         as: 'tb_tt_to_md_tour',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
-      tb_tt_to_as_tour_cm_difficult.belongsTo(models.tb_gcm_complement ,{
+      tb_tt_to_as_tour_cm_general.belongsTo(models.tb_gcm_complement, {
         as: 'tb_gcm_complement',
         foreignKey: 'tb_gcm_cm_complement_id'
       })
     }
   }
-  tb_tt_to_as_tour_cm_difficult.init({
-    cm_difficult_id: {
-      type: DataTypes.UUID,
+  tb_tt_to_as_tour_cm_general.init({
+    as_general_information_id: {
       allowNull: false,
       primaryKey: true,
+      type: DataTypes.UUID,
       defaultValue: UUIDV4
     },
     tb_tt_to_md_tour_tour_id: {
@@ -36,21 +37,13 @@ module.exports = (sequelize, DataTypes) => {
     tb_gcm_cm_complement_id: {
       type: DataTypes.UUID,
       allowNull: false
-    },
-    enabled: {
-      type: DataTypes.CHAR,
-      allowNull: false
-    },
-    removed: {
-      type: DataTypes.CHAR,
-      allowNull: false
     }
   }, {
     sequelize,
     timestamps: true,
     paranoid: true,
     freezeTableName: true,
-    modelName: 'tb_tt_to_as_tour_cm_difficult',
+    modelName: 'tb_tt_to_as_tour_cm_general',
   });
-  return tb_tt_to_as_tour_cm_difficult;
+  return tb_tt_to_as_tour_cm_general;
 };

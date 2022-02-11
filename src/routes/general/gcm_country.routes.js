@@ -2,7 +2,7 @@ import { Router } from 'express'
 const router = Router()
 
 import { getAllCountries } 
-        from '../controllers/gcm_country.controller'
+        from '../../controllers/general/gcm_country.controller'
 
 router.get('/', getAllCountries)
 

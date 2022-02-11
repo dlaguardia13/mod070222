@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tb_bp_md_business_profile_id'
       })
 
-      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_category, {
+      tb_tt_to_md_tour.hasOne(models.tb_tt_to_as_tour_category, {
         as: 'tb_tt_to_as_tour_category',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
@@ -91,12 +91,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
-      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_difficult, {
+      tb_tt_to_md_tour.hasOne(models.tb_tt_to_as_tour_cm_difficult, {
         as: 'tb_tt_to_as_tour_cm_difficult',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
-      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_suit_to, {
+      tb_tt_to_md_tour.hasOne(models.tb_tt_to_as_tour_cm_suit_to, {
         as: 'tb_tt_to_as_tour_cm_suit_to',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
@@ -108,6 +108,26 @@ module.exports = (sequelize, DataTypes) => {
       
       tb_tt_to_md_tour.hasMany(models.tb_tt_ed_schedules, {
         as: 'tb_tt_ed_schedules',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_complement, {
+        as: 'tb_tt_to_as_tour_complement',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_sn, {
+        as: 'tb_tt_to_as_tour_cm_sn',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_sc, {
+        as: 'tb_tt_to_as_tour_cm_sc',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_tour_cm_general, {
+        as: 'tb_tt_to_as_tour_cm_general',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
     }

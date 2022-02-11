@@ -1,5 +1,5 @@
 'use strict';
-const { model } = require('mongoose');
+
 const {
   Model, UUIDV4
 } = require('sequelize');
@@ -24,14 +24,33 @@ module.exports = (sequelize, DataTypes) => {
 
       tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_difficult, {
         as: 'tb_tt_to_as_tour_cm_difficult',
-        foreignKey: 'tb_gcm_complement_complement_id'
+        foreignKey: 'tb_gcm_cm_complement_id'
       })
 
       tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_suit_to, {
         as: 'tb_tt_to_as_tour_cm_suit_to',
-        foreignKey: 'tb_gcm_complement_complement_id'
+        foreignKey: 'tb_gcm_cm_complement_id'
       })
 
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_general, {
+        as: 'tb_tt_to_as_tour_cm_general',
+        foreignKey: 'tb_gcm_cm_complement_id'
+      })
+
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_sc, {
+        as: 'tb_tt_to_as_tour_cm_sc',
+        foreignKey: 'tb_gcm_cm_complement_id'
+      })
+
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_cm_sn, {
+        as: 'tb_tt_to_as_tour_cm_sn',
+        foreignKey: 'tb_gcm_cm_complement_id'
+      })
+
+      tb_gcm_complement.hasMany(models.tb_tt_to_as_tour_complement, {
+        as: 'tb_tt_to_as_tour_complement',
+        foreignKey: 'tb_gcm_complement_complement_id'
+      })
 
     }
   }
