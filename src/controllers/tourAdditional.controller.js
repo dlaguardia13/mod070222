@@ -44,7 +44,7 @@ export async function addInfoTour(req, res) {
 export async function getIngfoTour(req, res) {
     const { tour_id } = req.params
     try {
-        const allAdditional = await Md_tour.findByPk(tour_id, {
+        let allAdditional = await Md_tour.findByPk(tour_id, {
             attributes: ['tour_id','capacity','before_booking'],
             include: [
                 {model: Tour_category, as: 'tb_tt_to_as_tour_category', attributes: [['tb_gcm_category_category_id','_id']] },
@@ -53,14 +53,30 @@ export async function getIngfoTour(req, res) {
                 {model: Tour_language, as: 'tb_tt_to_as_tour_language', attributes: [['tb_gcm_language_language_id','_id']]}
             ]
         })
+        //Get all languages from gcm_languages
+        let AllLanguages = await Gcm_language.findAll({ attributes: [['language_id','_id'],'language','code'] })
+
+        AllLanguages = AllLanguages.map(language =>{
+            language = language.toJSON()
+            language.assigned = false
+            return language 
+        })
+
+        allAdditional = allAdditional.toJSON()
+        allAdditional.tb_tt_to_as_tour_language = matchObjects(AllLanguages,allAdditional.tb_tt_to_as_tour_language)
+
         if (allAdditional) {
             res.json({
                 allAdditional
             })
+        }else{
+            res.json({
+                msg: "Error: no existe ese registro"
+            })
         }
     } catch (error) {
         res.json({
-            msg: error.message
+            msg: error.msg
         })
     }
 }
@@ -86,7 +102,7 @@ export async function getLanguages(req, res){
     try {
         const languages = await Gcm_language.findAll({
             attributes: ['language_id','language']
-        })    
+        })
         if (languages) {
             res.json({
                 languages
@@ -97,4 +113,17 @@ export async function getLanguages(req, res){
             msg: error.message
         })
     }
+}
+
+//OTHER FUNCTIONS
+function matchObjects(complements, assignedComplements) {
+    let match = [];
+    complements.map(complement => {
+        let search = assignedComplements.find(assigned => assigned._id == complement._id);
+        if (search) {
+            complement.assigned = true;
+        }
+        match.push(complement);
+    });
+    return match;
 }
