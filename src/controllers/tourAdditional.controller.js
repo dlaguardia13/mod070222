@@ -21,9 +21,9 @@ export async function addInfoTour(req, res) {
         const tourLanguageD = await Tour_language.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
         //Creating
         let newDifficult = await Tour_difficult.create({ tb_tt_to_md_tour_tour_id: tour_id, tb_gcm_cm_complement_id: tb_gcm_cm_complement_id_difficult, enabled, removed },
-            { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_complement_complement_id', 'enabled', 'removed'] })
+            { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_cm_complement_id', 'enabled', 'removed'] })
         let newSuitTo = await Tour_suit_to.create({ tb_tt_to_md_tour_tour_id: tour_id, tb_gcm_cm_complement_id: tb_gcm_cm_complement_id_suit_to, enabled, removed },
-            { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_complement_complement_id', 'enabled', 'removed'] })
+            { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_cm_complement_id', 'enabled', 'removed'] })
         let newCategory = await Tour_category.create({ tb_tt_to_md_tour_tour_id: tour_id, tb_gcm_category_category_id, enabled, removed },
             { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_category_category_id', 'enabled', 'removed'] })
         let languages = await Promise.all(tb_gcm_language_language_id.map(async (languages) => {
