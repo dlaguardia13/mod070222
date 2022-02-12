@@ -8,6 +8,7 @@ import gcm_city_rt from "./routes/general/gcm_city.routes"
 import gcm_complements_rt from "./routes/general/gcm_complement.routes"
 import additionalInfo_rt from "./routes/tourAdditional.routes"
 import whatWillSee from "./routes/tourWillSeeAndWhat.routes"
+import vailability_tr from "./routes/av_for_months.routes"
 
 const app = express()
 
@@ -25,6 +26,8 @@ app.use("/api/address_tour",address_tour_rt)
 app.use("/api/addiInfo",additionalInfo_rt)
 //Tour: "Will see" and "what"
 app.use("/api/WhatWillSee", whatWillSee)
+//Tour: Availability
+app.use("/api/availability", vailability_tr)
 //general
 app.use("/api/gcm_complements", gcm_complements_rt)
 app.use("/api/gcm_country",gcm_country_rt)
