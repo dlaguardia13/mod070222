@@ -33,7 +33,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       start_times_flexible: {
-        type: Sequelize.TEXT
+        type: Sequelize.ARRAY(Sequelize.TEXT)
       },
       createdAt: {
         allowNull: true,

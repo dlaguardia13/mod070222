@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model, UUIDV4
+  Model, UUIDV4, Sequelize
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class tb_tt_to_itinerary extends Model {
@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     active_user: DataTypes.STRING,
-    start_times_flexible: DataTypes.TEXT
+    start_times_flexible: DataTypes.ARRAY(Sequelize.TEXT)
   }, {
     sequelize,
     timestamps: true,
