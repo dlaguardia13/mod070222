@@ -71,9 +71,7 @@ export async function getAllAddresses(req, res) {
         })
 
         if (allAddresseses) {
-            res.json({
-                data: allAddresseses
-            })
+            res.json(allAddresseses)
         } else {
             res.json({
                 data: null

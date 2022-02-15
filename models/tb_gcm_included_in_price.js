@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       tb_gcm_included_in_price.hasMany(models.tb_tt_to_as_tour_ip, {
         as: 'tb_tt_to_as_tour_ip',
-        foreignKey: 'tb_gcm_ip_included_in_price_id'
+        foreignKey: 'tb_gcm_p_included_in_price_id'
       })
     }
   }

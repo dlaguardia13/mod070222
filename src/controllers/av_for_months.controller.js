@@ -56,10 +56,10 @@ export async function getInfoTourAvailability(req, res) {
             where: { tb_tt_to_md_tour_tour_id: tour_id }, include: { model: DaysAvPerMonth, as: 'tb_tt_to_days_av_per_month', attributes: [['days_av_per_month_id', '_id'], 'day'] }
         })
 
-        res.json({
-            infoTourAvailability,
-            tb_tt_to_av_for_months: extraInfo
-        })
+        infoTourAvailability = infoTourAvailability.toJSON()
+        infoTourAvailability.tb_tt_to_av_for_months = extraInfo
+        res.json(infoTourAvailability)
+        
     } catch (error) {
         res.json({
             msg: error.message

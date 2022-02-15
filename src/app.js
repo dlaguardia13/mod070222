@@ -10,6 +10,8 @@ import additionalInfo_rt from "./routes/tourAdditional.routes"
 import whatWillSee from "./routes/tourWillSeeAndWhat.routes"
 import vailability_tr from "./routes/av_for_months.routes"
 import itinerary_rt from "./routes/tourItinerary.routes"
+import price_type_rt from "./routes/tourPriceType.routes"
+import cancellation_rt from "./routes/tourCancellationPolicy.routes"
 
 const app = express()
 
@@ -31,6 +33,10 @@ app.use("/api/WhatWillSee", whatWillSee)
 app.use("/api/availability", vailability_tr)
 //Tour: Itinerary
 app.use("/api/itinerary", itinerary_rt)
+//Tour: Cancellation
+app.use("/api/cancellation", cancellation_rt)
+//Tour: Price type
+app.use("/api/prices", price_type_rt)
 //general
 app.use("/api/gcm_complements", gcm_complements_rt)
 app.use("/api/gcm_country",gcm_country_rt)

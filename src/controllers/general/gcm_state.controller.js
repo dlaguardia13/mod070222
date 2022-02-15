@@ -12,9 +12,7 @@ export async function getAllStates(req, res) {
         })
 
         if (allStates) {
-            res.json({
-                data: allStates
-            })
+            res.json(allStates)
         } else {
             res.json({
                 data: null

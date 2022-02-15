@@ -1,3 +1,4 @@
+import { matchObjects } from '../controllers/general/otherFunctions.controller'
 const YouWillSee = require('../../models').tb_tt_to_you_will_see
 const CmWhat = require('../../models').tb_tt_to_as_tour_cm_whant
 const Md_tour = require("../../models").tb_tt_to_md_tour 
@@ -62,9 +63,7 @@ export async function getInfoTour(req, res){
         allWhatWillSee.tb_tt_to_as_tour_cm_whant = matchObjects(AllCm,allWhatWillSee.tb_tt_to_as_tour_cm_whant)
 
         if (allWhatWillSee) {
-            res.json({
-                allWhatWillSee
-            })
+            res.json(allWhatWillSee)
         }else{
             res.json({
                 msg: "Error: no existe ese registro"
@@ -75,17 +74,4 @@ export async function getInfoTour(req, res){
             msg: error.msg
         })
     }
-}
-
-//OTHER FUNCTIONS
-function matchObjects(complements, assignedComplements) {
-    let match = [];
-    complements.map(complement => {
-        let search = assignedComplements.find(assigned => assigned._id == complement._id);
-        if (search) {
-            complement.assigned = true;
-        }
-        match.push(complement);
-    });
-    return match;
 }

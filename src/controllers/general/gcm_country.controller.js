@@ -12,9 +12,7 @@ export async function getAllCountries(req, res){
         })
 
         if (Allcountries) {
-            res.json({
-                data: Allcountries
-            })
+            res.json(Allcountries)
         }else{
             res.json({
                 data: null

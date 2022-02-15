@@ -1,8 +1,8 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tb_tt_to_as_tour_ip', {
-      as_tour_included_in_price_id: {
+    await queryInterface.createTable('tb_tt_to_custom_term', {
+      custom_term_id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID
@@ -17,23 +17,20 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      tb_gcm_p_included_in_price_id: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: 'tb_gcm_included_in_price',
-          key: 'included_in_price_id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
-      },
-      enabled: {
-        type: Sequelize.CHAR,
+      custom_term: {
+        type: Sequelize.STRING,
         allowNull: false
       },
-      removed: {
-        type: Sequelize.CHAR,
+      language_code: {
+        type: Sequelize.STRING,
         allowNull: false
+      },
+      product_type: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      active_user: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: true,
@@ -53,10 +50,10 @@ module.exports = {
       paranoid: true,
       underscored: true,
       freezeTableName: true,
-      tableName: 'tb_tt_to_as_tour_ip'
+      tableName: 'tb_tt_to_custom_term'
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tb_tt_to_as_tour_ip');
+    await queryInterface.dropTable('tb_tt_to_custom_term');
   }
 };

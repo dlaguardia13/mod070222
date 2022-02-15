@@ -10,9 +10,7 @@ export async function getCoplementsByType(req, res){
             attributes: ['complement_id','name']
         })
         if (complemets) {
-            res.json({
-                complemets
-            })
+            res.json(complemets)
         }
     } catch (error) {
         res.json({

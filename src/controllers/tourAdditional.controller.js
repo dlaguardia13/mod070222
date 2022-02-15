@@ -1,3 +1,4 @@
+import { matchObjects } from '../controllers/general/otherFunctions.controller'
 const Md_tour = require("../../models").tb_tt_to_md_tour
 const Tour_category = require("../../models").tb_tt_to_as_tour_category
 const Tour_difficult = require("../../models").tb_tt_to_as_tour_cm_difficult
@@ -66,9 +67,7 @@ export async function getIngfoTour(req, res) {
         allAdditional.tb_tt_to_as_tour_language = matchObjects(AllLanguages,allAdditional.tb_tt_to_as_tour_language)
 
         if (allAdditional) {
-            res.json({
-                allAdditional
-            })
+            res.json(allAdditional)
         }else{
             res.json({
                 msg: "Error: no existe ese registro"
@@ -113,17 +112,4 @@ export async function getLanguages(req, res){
             msg: error.message
         })
     }
-}
-
-//OTHER FUNCTIONS
-function matchObjects(complements, assignedComplements) {
-    let match = [];
-    complements.map(complement => {
-        let search = assignedComplements.find(assigned => assigned._id == complement._id);
-        if (search) {
-            complement.assigned = true;
-        }
-        match.push(complement);
-    });
-    return match;
 }

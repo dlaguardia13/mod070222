@@ -11,9 +11,7 @@ export async function getAllCities(req, res) {
         })
 
         if (allCities) {
-            res.json({
-                data: allCities
-            })
+            res.json(allCities)
         }else{
             res.json({
                 data: null

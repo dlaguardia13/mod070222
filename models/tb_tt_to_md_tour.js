@@ -130,6 +130,16 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tb_tt_to_as_tour_cm_general',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_custom_term, {
+        as: 'tb_tt_to_custom_term',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
+
+      tb_tt_to_md_tour.hasMany(models.tb_tt_to_as_cp_to, {
+        as: 'tb_tt_to_as_cp_to',
+        foreignKey: 'tb_tt_to_md_tour_tour_id'
+      })
     }
   }
   tb_tt_to_md_tour.init({

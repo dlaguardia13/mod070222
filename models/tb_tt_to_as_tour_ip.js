@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
 
       tb_tt_to_as_tour_ip.belongsTo(models.tb_gcm_included_in_price, {
         as: 'tb_gcm_included_in_price',
-        foreignKey: 'tb_gcm_ip_included_in_price_id'
+        foreignKey: 'tb_gcm_p_included_in_price_id'
       })
     }
   }
@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false
     },
-    tb_gcm_ip_included_in_price_id: {
+    tb_gcm_p_included_in_price_id: {
       type: DataTypes.UUID,
       allowNull: false
     },

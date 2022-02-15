@@ -1,8 +1,8 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tb_tt_to_as_tour_ip', {
-      as_tour_included_in_price_id: {
+    await queryInterface.createTable('tb_tt_to_as_cp_to', {
+      as_cancellation_tour_id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID
@@ -17,23 +17,21 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      tb_gcm_p_included_in_price_id: {
+      tb_gcm_cancellation_policy_id: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: 'tb_gcm_included_in_price',
-          key: 'included_in_price_id'
+          model: 'tb_gcm_cancellation_policy',
+          key: 'cancellation_policy_id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      enabled: {
-        type: Sequelize.CHAR,
-        allowNull: false
+      custom_no_days: {
+        type: Sequelize.INTEGER
       },
-      removed: {
-        type: Sequelize.CHAR,
-        allowNull: false
+      custom_percent: {
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: true,
@@ -53,10 +51,10 @@ module.exports = {
       paranoid: true,
       underscored: true,
       freezeTableName: true,
-      tableName: 'tb_tt_to_as_tour_ip'
+      tableName: 'tb_tt_to_as_cp_to'
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tb_tt_to_as_tour_ip');
+    await queryInterface.dropTable('tb_tt_to_as_cp_to');
   }
 };

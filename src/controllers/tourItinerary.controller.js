@@ -80,11 +80,11 @@ export async function getInfoTourItinerary(req, res) {
             attributes: [['itinerary_id', '_id'], 'no_day', 'start_times_flexible'],
             where: { tb_tt_to_md_tour_tour_id: tour_id }, include: { model: ToActivity, as: 'tb_tt_to_activity', attributes: [['activity_id', '_id'], 'description','start_time'] }
         })
+        
+        getToMdTour = getToMdTour.toJSON()
+        getToMdTour.tb_tt_to_itinerary = getToItinerary 
+        res.json(getToMdTour)
 
-        res.json({
-            getToMdTour,
-            tb_tt_to_activity: getToItinerary
-        })
     } catch (error) {
         res.json({
             msg: error.message

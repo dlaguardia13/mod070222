@@ -40,9 +40,7 @@ export async function getAllTours(req, res) {
             attributes: ['name', 'title', 'description','slug']
         })
         if (AllTours) {
-            res.json({
-                data: AllTours
-            })
+            res.json(AllTours)
         }
     } catch (error) {
         res.json({
