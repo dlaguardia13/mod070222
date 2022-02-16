@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   tb_tt_to_custom_term.init({
-    as_cancelation_tour_id: {
+    custom_term_id: {
       type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,

@@ -12,6 +12,8 @@ import vailability_tr from "./routes/av_for_months.routes"
 import itinerary_rt from "./routes/tourItinerary.routes"
 import price_type_rt from "./routes/tourPriceType.routes"
 import cancellation_rt from "./routes/tourCancellationPolicy.routes"
+import custom_terms_rt from "./routes/tourCustomTerm.routes"
+import adv_chanels_rt from "./routes/advertisingChanels.routes"
 
 const app = express()
 
@@ -37,6 +39,10 @@ app.use("/api/itinerary", itinerary_rt)
 app.use("/api/cancellation-policy", cancellation_rt)
 //Tour: Price type
 app.use("/api/prices", price_type_rt)
+//Tour: Service Rules
+app.use("/api/service-rules", custom_terms_rt)
+//Tour: advertising chanels
+app.use("/api/advertising-chanels", adv_chanels_rt)
 //general
 app.use("/api/gcm_complements", gcm_complements_rt)
 app.use("/api/gcm_country",gcm_country_rt)
