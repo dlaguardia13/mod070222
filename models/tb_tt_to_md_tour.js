@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       })
 
       tb_tt_to_md_tour.hasMany(models.tb_tt_to_address_tour, {
-        as: 'tb_tt_to_address',
+        as: 'tb_tt_to_address_tour',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
