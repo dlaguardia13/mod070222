@@ -184,6 +184,7 @@ module.exports = (sequelize, DataTypes) => {
     type_of_tour: DataTypes.INTEGER,
     before_booking: DataTypes.INTEGER,
     min_of_people: DataTypes.INTEGER,
+    changes_in_reservation: DataTypes.CHAR,
     language_code: DataTypes.STRING,
     enabled: {
       type: DataTypes.CHAR,

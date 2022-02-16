@@ -34,7 +34,7 @@ app.use("/api/availability", vailability_tr)
 //Tour: Itinerary
 app.use("/api/itinerary", itinerary_rt)
 //Tour: Cancellation
-app.use("/api/cancellation", cancellation_rt)
+app.use("/api/cancellation-policy", cancellation_rt)
 //Tour: Price type
 app.use("/api/prices", price_type_rt)
 //general

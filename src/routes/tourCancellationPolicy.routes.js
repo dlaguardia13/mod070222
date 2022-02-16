@@ -1,9 +1,9 @@
 import { Router } from 'express'
 const router = Router()
 
-//import {  addInfoTour,getInfoTour } from ''
+import {  addInfoTourCancellationP,getInfoTourCancellationP } from '../controllers/tourCancellationPolicy.controller'
  
-//router.get('/:tour_id', getInfoTourPriceType)
-//router.put('/:tour_id', addInfoTourPriceType)
+router.get('/:tour_id', getInfoTourCancellationP)
+router.put('/:tour_id', addInfoTourCancellationP)
 
 export default router

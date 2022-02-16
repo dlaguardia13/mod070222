@@ -73,6 +73,9 @@ module.exports = {
       min_of_people: {
         type: Sequelize.INTEGER
       },
+      changes_in_reservation: {
+        type: Sequelize.CHAR
+      },
       language_code: {
         type: Sequelize.STRING
       },
