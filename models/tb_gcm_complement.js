@@ -52,6 +52,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tb_gcm_complement_complement_id'
       })
 
+      tb_gcm_complement.hasOne(models.tb_gcm_tr_complement,{
+        as: 'tb_gcm_tr_complement',
+        foreignKey: 'tb_gcm_cm_complement_id'
+      })
+
     }
   }
   tb_gcm_complement.init({

@@ -6,6 +6,8 @@ const Tour_suit_to = require("../../models").tb_tt_to_as_tour_cm_suit_to
 const Tour_language = require("../../models").tb_tt_to_as_tour_language
 const Gcm_category = require("../../models").tb_gcm_category
 const Gcm_language = require("../../models").tb_gcm_language
+const Gcm_Complement = require("../../models").tb_gcm_complement
+const Gcm_Tr_Complement = require("../../models").tb_gcm_tr_complement
 
 export async function addInfoTour(req, res) {
     const { tour_id } = req.params
@@ -44,38 +46,72 @@ export async function addInfoTour(req, res) {
 
 export async function getIngfoTour(req, res) {
     const { tour_id } = req.params
+    const { language } = req.query
     try {
         let allAdditional = await Md_tour.findByPk(tour_id, {
-            attributes: ['tour_id','capacity','before_booking'],
+            attributes: ['tour_id','capacity','before_booking']
+            ,
             include: [
                 {model: Tour_category, as: 'tb_tt_to_as_tour_category', attributes: [['tb_gcm_category_category_id','_id']] },
-                {model: Tour_suit_to, as: 'tb_tt_to_as_tour_cm_suit_to', attributes: [['tb_gcm_cm_complement_id','_id']]},
-                {model: Tour_difficult, as: 'tb_tt_to_as_tour_cm_difficult', attributes: [['tb_gcm_cm_complement_id','_id']]},
                 {model: Tour_language, as: 'tb_tt_to_as_tour_language', attributes: [['tb_gcm_language_language_id','_id']]}
             ]
         })
+        //---
+        let suit_to = await Tour_suit_to.findAll({ where: {tb_tt_to_md_tour_tour_id: tour_id},
+            attributes: [['tb_gcm_cm_complement_id','_id']], include: { model: Gcm_Complement, as: 'tb_gcm_complement', attributes: ['name','language_code'], 
+                include: {model: Gcm_Tr_Complement,as: 'tb_gcm_tr_complement', attributes: ['translation', 'language_code']}} })
+        let to_difficult = await Tour_difficult.findAll({ where: {tb_tt_to_md_tour_tour_id: tour_id},
+            attributes: [['tb_gcm_cm_complement_id','_id']], include: { model: Gcm_Complement, as: 'tb_gcm_complement', attributes: ['name', 'language_code'], 
+                include: {model: Gcm_Tr_Complement,as: 'tb_gcm_tr_complement', attributes: ['translation','language_code']}} })
         //Get all languages from gcm_languages
         let AllLanguages = await Gcm_language.findAll({ attributes: [['language_id','_id'],'language','code'] })
 
-        AllLanguages = AllLanguages.map(language =>{
-            language = language.toJSON()
-            language.assigned = false
-            return language 
+        AllLanguages = AllLanguages.map(languages =>{
+            languages = languages.toJSON()
+            languages.assigned = false
+            return languages 
         })
-
+        //--
+            if ((language == "es") || (!language)) {
+                suit_to = suit_to.map(e => {
+                    e = e.toJSON()
+                    delete e.tb_gcm_complement.tb_gcm_tr_complement
+                    return e
+                })
+                to_difficult = to_difficult.map(e => {
+                    e = e.toJSON()
+                    delete e.tb_gcm_complement.tb_gcm_tr_complement
+                    return e
+                })
+            } else if(language == "en")
+            {
+                to_difficult = to_difficult.map(e => {
+                    e = e.toJSON()
+                    e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
+                    e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
+                    delete e.tb_gcm_complement.tb_gcm_tr_complement
+                    delete e.tb_gcm_complement
+                    return e
+                })
+                suit_to = suit_to.map(e => {
+                    e = e.toJSON()
+                    e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
+                    e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
+                    delete e.tb_gcm_complement.tb_gcm_tr_complement
+                    delete e.tb_gcm_complement
+                    return e
+                })
+            }
+        //--
         allAdditional = allAdditional.toJSON()
+        allAdditional.tb_tt_to_as_tour_cm_suit_to = suit_to
+        allAdditional.tb_tt_to_as_tour_cm_difficult = to_difficult
         allAdditional.tb_tt_to_as_tour_language = matchObjects(AllLanguages,allAdditional.tb_tt_to_as_tour_language)
-
-        if (allAdditional) {
-            res.json(allAdditional)
-        }else{
-            res.json({
-                msg: "Error: no existe ese registro"
-            })
-        }
+        
+        res.json(allAdditional)
     } catch (error) {
         res.json({
-            msg: error.msg
+            msg: error
         })
     }
 }

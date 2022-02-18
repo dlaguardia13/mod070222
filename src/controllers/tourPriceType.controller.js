@@ -3,6 +3,7 @@ const ToPriceType = require('../../models').tb_tt_to_price_type
 const AsTourIp = require('../../models').tb_tt_to_as_tour_ip
 const ToMdTour = require('../../models').tb_tt_to_md_tour
 const GcmIP = require('../../models').tb_gcm_included_in_price
+const GcmTrIP = require("../../models").tb_gcm_tr_included_in_price
 
 export async function addInfoTourPriceType(req, res){
     const { tour_id } = req.params
@@ -52,12 +53,43 @@ export async function addInfoTourPriceType(req, res){
 
 export async function getInfoTourPriceType(req, res){
     const { tour_id } = req.params
+    const { language } = req.query
     try {
         let allIncludedIp = await ToMdTour.findByPk(tour_id,{
             attributes: ['product_type', 'type_of_tour'],
-            include: [{model: ToPriceType, as: 'tb_tt_to_price_type', attributes: [['to_price_id','_id'],'price_type','adult','child']},
-            {model: AsTourIp, as: 'tb_tt_to_as_tour_ip', attributes: [['tb_gcm_p_included_in_price_id', '_id']]}]
+            include: {model: ToPriceType, as: 'tb_tt_to_price_type', 
+            attributes: [['to_price_id','_id'],'price_type','adult','child']}  
         })
+        //--
+        let included_ip = await AsTourIp.findAll({ 
+            where: { tb_tt_to_md_tour_tour_id: tour_id }, attributes:[['tb_gcm_p_included_in_price_id', '_id']], 
+            include: [{model: GcmIP, as:'tb_gcm_included_in_price', attributes: ['description','language_code']
+            ,include: [{model: GcmTrIP,as:'tb_gcm_tr_included_in_price', attributes: [['translation','tr'],['language_code','lc']]}]
+        }]})
+        //--
+        if ((language == "es") || (!language)) {
+            included_ip = included_ip.map(e => {
+                e = e.toJSON()
+                e.description = e.tb_gcm_included_in_price.description
+                e.language_code = e.tb_gcm_included_in_price.language_code
+                delete e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price
+                delete e.tb_gcm_included_in_price
+                return e
+            })
+        } else if(language == "en")
+        {
+            included_ip = included_ip.map(e => {
+                e = e.toJSON()
+                e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price = e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price.map(ee =>{
+                    e.description = ee.tr
+                    e.language_code = ee.lc
+                    return ee
+                })
+                delete e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price
+                delete e.tb_gcm_included_in_price
+                return e
+            })
+        }
         //Get all ip's items from gcm_ip
         let ipItems = await GcmIP.findAll({ where: { product_type: 11 },attributes: [['included_in_price_id','_id'],'description','language_code','product_type'] })
 
@@ -68,20 +100,13 @@ export async function getInfoTourPriceType(req, res){
         })
 
         allIncludedIp = allIncludedIp.toJSON()
-        allIncludedIp.tb_tt_to_as_tour_ip = matchObjects(ipItems,allIncludedIp.tb_tt_to_as_tour_ip)
+        allIncludedIp.tb_tt_to_as_tour_ip = included_ip
+        allIncludedIp.tb_tt_to_as_tour_ip = matchObjects(allIncludedIp.tb_tt_to_as_tour_ip,ipItems)
 
         if (allIncludedIp) {
             res.json(allIncludedIp)
-        }else{
-            res.json({
-                msg: "Error: no existe ese registro"
-            })
-        }
-    } catch (error) {
-        res.json({
-            msg: error
-        })
-    }
+        }else{ res.json({ msg: "Error: no existe ese registro" }) }
+    } catch (error) { res.json({ msg: error.message }) }
 }
 
 

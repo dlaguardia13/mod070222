@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tb_tt_to_as_cp_to',
         foreignKey: 'tb_gcm_cancellation_policy_id'
       })
+
+      tb_gcm_cancellation_policy.hasMany(models.tb_gcm_tr_cancellation_policy,{
+        as: 'tb_gcm_tr_cancellation_policy',
+        foreignKey: 'tb_gcm_cp_cancellation_policy_id'
+      })
     }
   }
   

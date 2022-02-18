@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tb_tt_to_as_tour_ip',
         foreignKey: 'tb_gcm_p_included_in_price_id'
       })
+
+      tb_gcm_included_in_price.hasMany(models.tb_gcm_tr_included_in_price,{
+        as: 'tb_gcm_tr_included_in_price',
+        foreignKey: 'tb_gcm_ip_included_in_price_id'
+      })
     }
   }
   tb_gcm_included_in_price.init({

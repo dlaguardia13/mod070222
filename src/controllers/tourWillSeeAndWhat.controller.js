@@ -2,8 +2,9 @@ import { matchObjects } from '../controllers/general/otherFunctions.controller'
 const YouWillSee = require('../../models').tb_tt_to_you_will_see
 const CmWhat = require('../../models').tb_tt_to_as_tour_cm_whant
 const Md_tour = require("../../models").tb_tt_to_md_tour 
-const GcmComplement = require("../../models").tb_gcm_complement 
-
+const GcmComplement = require("../../models").tb_gcm_complement
+const Gcm_Tr_Complement = require("../../models").tb_gcm_tr_complement 
+const TrYouWillSee = require("../../models").tb_tt_to_tr_you_will_see
 
 export async function addInfoTour(req, res){
     const { tour_id } = req.params
@@ -42,14 +43,52 @@ export async function addInfoTour(req, res){
 
 export async function getInfoTour(req, res){
     const { tour_id } = req.params
+    const { language } = req.query
     try {
-        let allWhatWillSee = await Md_tour.findByPk(tour_id, {
-            attributes: ['tour_id'],
-            include: [
-                {model: YouWillSee, as: 'tb_tt_to_you_will_see', attributes: [['you_will_see_id','_id'],'you_will_see','info_type']},
-                {model: CmWhat, as: 'tb_tt_to_as_tour_cm_whant', attributes: [['tb_gcm_complement_complement_id','_id']]},
-            ]
+        let allWhatWillSee = await Md_tour.findByPk(tour_id, { attributes: ['tour_id'] })
+        //--
+        let cm_what = await CmWhat.findAll({
+            where: { tb_tt_to_md_tour_tour_id: tour_id }, attributes: [['tb_gcm_complement_complement_id','_id']],
+            include: {model: GcmComplement, as: 'tb_gcm_complement', attributes: ['name','language_code'], 
+            include: {model: Gcm_Tr_Complement,as: 'tb_gcm_tr_complement',attributes: ['translation','language_code']}}
         })
+        let you_will = await YouWillSee.findAll({
+            where: { tb_tt_to_md_tour_tour_id: tour_id }, attributes: [['you_will_see_id','_id'],'you_will_see'],
+            include: {model: TrYouWillSee, as: 'tb_tt_to_tr_you_will_see', attributes: ['translation','language_code']}
+        })
+        //--
+        if ((language == "es") || (!language)) {
+            cm_what = cm_what.map(e => {
+                e = e.toJSON()
+                e.name = e.tb_gcm_complement.name
+                e.language_code = e.tb_gcm_complement.language_code
+                delete e.tb_gcm_complement.tb_gcm_tr_complement
+                delete e.tb_gcm_complement
+                return e
+            })
+            you_will = you_will.map(e => {
+                e = e.toJSON()
+                delete e.tb_tt_to_tr_you_will_see
+                return e
+            })
+        } else if(language == "en")
+        {
+            cm_what = cm_what.map(e => {
+                e = e.toJSON()
+                e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
+                e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
+                delete e.tb_gcm_complement.tb_gcm_tr_complement
+                delete e.tb_gcm_complement
+                return e
+            })
+            you_will = you_will.map(e => {
+                e = e.toJSON()
+                e.you_will_see = e.tb_tt_to_tr_you_will_see.translation
+                e.language_code = e.tb_tt_to_tr_you_will_see.language_code
+                delete e.tb_tt_to_tr_you_will_see
+                return e
+            })
+        }
         //Get all languages from gcm_languages
         let AllCm = await GcmComplement.findAll({ where: { complement_type: 8 },attributes: [['complement_id','_id'],'name','complement_type'] })
 
@@ -60,18 +99,12 @@ export async function getInfoTour(req, res){
         })
 
         allWhatWillSee = allWhatWillSee.toJSON()
-        allWhatWillSee.tb_tt_to_as_tour_cm_whant = matchObjects(AllCm,allWhatWillSee.tb_tt_to_as_tour_cm_whant)
+        allWhatWillSee.tb_tt_to_as_tour_cm_whant = cm_what
+        allWhatWillSee.tb_tt_to_you_will_see = you_will
+        allWhatWillSee.tb_tt_to_as_tour_cm_whant = matchObjects(allWhatWillSee.tb_tt_to_as_tour_cm_whant,AllCm)
 
-        if (allWhatWillSee) {
-            res.json(allWhatWillSee)
-        }else{
-            res.json({
-                msg: "Error: no existe ese registro"
-            })
-        }
+        if (allWhatWillSee) { res.json(allWhatWillSee) }else{ res.json({msg: "Error: no existe ese registro" }) }
     } catch (error) {
-        res.json({
-            msg: error.msg
-        })
+        res.json({ msg: error.msg })
     }
 }
