@@ -1,13 +1,16 @@
 import { rows } from "pg/lib/defaults"
+import { translateArray } from "../controllers/general/translator.controller" 
 const { Op } = require("sequelize");
 const Md_tour = require("../../models").tb_tt_to_md_tour
 const AddressesTour = require('../../models').tb_tt_to_address_tour
 const GcmState = require('../../models').tb_gcm_state
 const GcmCity = require('../../models').tb_gcm_city
+const MdTrTour = require('../../models').tb_tt_to_tr_tour
 
 export async function createTour(req, res) {
-    const { tb_bp_md_business_profile_id, tb_gcm_status_status_id,name, title, description,capacity,flexible_schedules,enabled,removed }
-        = req.body
+    let { tb_bp_md_business_profile_id, tb_gcm_status_status_id,name, title, description,
+          capacity,flexible_schedules,language_code,enabled,removed } = req.body
+    let tr
     try {
         let newTour = await Md_tour.create({
             tb_bp_md_business_profile_id, 
@@ -17,24 +20,34 @@ export async function createTour(req, res) {
             description,
             capacity,
             flexible_schedules,
+            language_code,
             enabled,
             removed
-        },
-            {
-                fields: [ 'tb_bp_md_business_profile_id', 'tb_gcm_status_status_id','name', 'title', 'description',
-                'capacity', 'flexible_schedules', 'enabled', 'removed']
-            })
-        if (newTour) {
-            res.json({
-                msg: 'Registro Creado!',
-                dataview: newTour
-            })
-        }
-    } catch (error) {
-        res.json({
-            msg: error
+        },{
+            fields: [ 'tb_bp_md_business_profile_id', 'tb_gcm_status_status_id','slug','name', 'title', 'description',
+            'capacity', 'flexible_schedules','language_code', 'enabled', 'removed'] 
         })
-    }
+        if (newTour) {
+            if (language_code == "en") {
+                tr = await translateArray([name, title, description], language_code, 'en-es')
+                language_code = "es"
+            } else if(language_code == "es"){ 
+                tr = await translateArray([name, title, description], language_code, 'es-en')
+                language_code = "en" 
+            }
+
+            let newTrTour = await MdTrTour.create({
+                tb_tt_to_md_tour_tour_id: newTour.tour_id,
+                language_code,
+                title: tr.translations[1].translation,
+                description: tr.translations[2].translation,
+                enabled,
+                removed
+            }, { fields: ['tb_tt_to_md_tour_tour_id', 'language_code', 'title', 'description' , 'enabled', 'removed'] 
+        })
+            if (newTour && newTrTour) { res.json({msg: 'Hecho!'}) }
+        } 
+    } catch (error) { res.json({ msg: error.message }) }
 }
 
 export async function getAllTours(req, res) {
@@ -57,15 +70,10 @@ export async function getAllTours(req, res) {
             limit: limit,
             offset: offset
         })
-        if (AllTours) {
-            res.json(AllTours)
-        }
-    } catch (error) {
-        res.json({
-            msg: error.message
-        })
-    }
+        if (AllTours) { res.json(AllTours) } 
+    } catch (error) { res.json({ msg: error.message }) }
 }
+
 export async function getOneTour(req, res) {
     const { tour_id } = req.params
     try {

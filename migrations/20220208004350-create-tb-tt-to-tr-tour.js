@@ -2,7 +2,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('tb_tt_to_tr_tour', {
-      to_tour_id: {
+      tr_tour_id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID
@@ -14,7 +14,7 @@ module.exports = {
           model: 'tb_tt_to_md_tour',
           key: 'tour_id'
         },
-        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       },
       language_code: {
