@@ -202,8 +202,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   SequelizeSlugify.slugifyModel(tb_tt_to_md_tour,{
-    source: ['name']
-    ,slugOptions: { lower: true },
+    source: ['name'],
+    slugOptions: { lower: true },
     overwrite: true,
     column: 'slug',
     incrementalReplacement: '-'

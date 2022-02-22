@@ -1,4 +1,4 @@
-import { rows } from "pg/lib/defaults"
+import e from "express";
 import { translateArray } from "../controllers/general/translator.controller" 
 const { Op } = require("sequelize");
 const Md_tour = require("../../models").tb_tt_to_md_tour
@@ -11,6 +11,7 @@ export async function createTour(req, res) {
     let { tb_bp_md_business_profile_id, tb_gcm_status_status_id,name, title, description,
           capacity,flexible_schedules,language_code,enabled,removed } = req.body
     let tr
+    let fLanguage
     try {
         let newTour = await Md_tour.create({
             tb_bp_md_business_profile_id, 
@@ -30,15 +31,15 @@ export async function createTour(req, res) {
         if (newTour) {
             if (language_code == "en") {
                 tr = await translateArray([name, title, description], language_code, 'en-es')
-                language_code = "es"
+                fLanguage = "es"
             } else if(language_code == "es"){ 
                 tr = await translateArray([name, title, description], language_code, 'es-en')
-                language_code = "en" 
+                fLanguage = "en" 
             }
 
             let newTrTour = await MdTrTour.create({
                 tb_tt_to_md_tour_tour_id: newTour.tour_id,
-                language_code,
+                language_code: fLanguage,
                 title: tr.translations[1].translation,
                 description: tr.translations[2].translation,
                 enabled,
@@ -52,48 +53,69 @@ export async function createTour(req, res) {
 
 export async function getAllTours(req, res) {
     let { search, offset, limit } = req.query
+    let { language } = req.query
     try {
         if(!search){search = "%"}
         if(!offset && !limit){offset = 0,limit = 10}
 
         const AllTours = await Md_tour.findAndCountAll({
-            where: {
-                name: {
-                    [Op.like]: `${search}`
-                }
-            },
-            attributes: ['name'],
-            include: {model: AddressesTour, as: 'tb_tt_to_address_tour', attributes: ['real_address'], include: [
+            where: { name: { [Op.like]: `${search}` } },
+            attributes: ['tour_id','name','title','description','language_code'],
+            include: [ {model: AddressesTour, as: 'tb_tt_to_address_tour', attributes: ['real_address'], include: [
                 {model: GcmState ,as: 'tb_gcm_state', attributes: ['state']},
                 {model: GcmCity ,as: 'tb_gcm_city', attributes: ['city']}
-            ]},
+            ]}, {model: MdTrTour,as: 'tb_tt_to_tr_tour', attributes:['title','description','language_code']}],
             limit: limit,
             offset: offset
         })
+        //--
+        AllTours.rows = AllTours.rows.map(e => {
+                e = e.toJSON()
+                if(e.language_code == language){
+                    delete e.tb_tt_to_tr_tour
+                }else{
+                    e.tb_tt_to_tr_tour.map(ee => {
+                        e.title = ee.title
+                        e.description = ee.description
+                        e.language_code = ee.language_code
+                        delete e.tb_tt_to_tr_tour
+                        return ee
+                    })
+                }
+                return e
+        })
+        //--
         if (AllTours) { res.json(AllTours) } 
     } catch (error) { res.json({ msg: error.message }) }
 }
 
 export async function getOneTour(req, res) {
     const { tour_id } = req.params
+    let { language } = req.query
     try {
-        let oneTour = await Md_tour.findOne({
-            where: {
-                tour_id
-            },
-            attributes: ['name'],
-            include: {model: AddressesTour, as: 'tb_tt_to_address_tour', attributes: ['real_address'], include: [
+        let oneTour = await Md_tour.findAll({
+            where: { tour_id },
+            attributes: ['tour_id','name','title','description','language_code'],
+            include: [ {model: AddressesTour, as: 'tb_tt_to_address_tour', attributes: ['real_address'], include: [
                 {model: GcmState ,as: 'tb_gcm_state', attributes: ['state']},
                 {model: GcmCity ,as: 'tb_gcm_city', attributes: ['city']}
-            ]}
+            ]}, {model: MdTrTour,as: 'tb_tt_to_tr_tour', attributes:['title','description','language_code']}]
         })
-        if (oneTour) {
-            res.json(oneTour)
-        }else{
-            res.json({
-                data: "El registro no existe"
-            })
-        }
+        //--
+        oneTour = oneTour.map(e => {
+            e = e.toJSON()
+            if(e.language_code == language){
+                delete e.tb_tt_to_tr_tour
+            }else{
+                e.title = e.tb_tt_to_tr_tour[0].title
+                e.description = e.tb_tt_to_tr_tour[0].description
+                e.language_code = e.tb_tt_to_tr_tour[0].language_code
+                delete e.tb_tt_to_tr_tour
+            }
+            return e
+        })                   
+        //--    
+        if (oneTour) { res.json(oneTour[0]) }
     } catch (error) {
         res.json({
             msg: error.message

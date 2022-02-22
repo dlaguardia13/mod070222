@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   tb_tt_to_tr_custom_term.init({
-    tr_included_in_price_id: {
+    tr_custom_id: {
       type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
