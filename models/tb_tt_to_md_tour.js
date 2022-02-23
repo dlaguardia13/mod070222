@@ -190,7 +190,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     mg_tour_id: DataTypes.STRING,
     active_user: DataTypes.STRING,
-    mg_tour_body: DataTypes.STRING,
+    mg_tour_body: DataTypes.JSON,
     step_validate: DataTypes.STRING
   }, {
     sequelize,
