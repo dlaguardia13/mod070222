@@ -72,36 +72,31 @@ export async function getIngfoTour(req, res) {
             return languages 
         })
         //--
-            if ((language == "es") || (!language)) {
-                suit_to = suit_to.map(e => {
-                    e = e.toJSON()
+            suit_to = suit_to.map(e => {
+                e = e.toJSON()
+                if(e.tb_gcm_complement.language_code == language)
+                {
                     delete e.tb_gcm_complement.tb_gcm_tr_complement
-                    return e
-                })
-                to_difficult = to_difficult.map(e => {
-                    e = e.toJSON()
-                    delete e.tb_gcm_complement.tb_gcm_tr_complement
-                    return e
-                })
-            } else if(language == "en")
-            {
-                to_difficult = to_difficult.map(e => {
-                    e = e.toJSON()
+                } else {
                     e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
                     e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
                     delete e.tb_gcm_complement.tb_gcm_tr_complement
                     delete e.tb_gcm_complement
-                    return e
-                })
-                suit_to = suit_to.map(e => {
-                    e = e.toJSON()
+                }
+                return e
+            })
+            to_difficult = to_difficult.map(e => {
+                e = e.toJSON()
+                if (e.tb_gcm_complement.language_code == language) {
+                    delete e.tb_gcm_complement.tb_gcm_tr_complement    
+                }else{
                     e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
                     e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
                     delete e.tb_gcm_complement.tb_gcm_tr_complement
                     delete e.tb_gcm_complement
-                    return e
-                })
-            }
+                }
+                return e
+            })
         //--
         allAdditional = allAdditional.toJSON()
         allAdditional.tb_tt_to_as_tour_cm_suit_to = suit_to

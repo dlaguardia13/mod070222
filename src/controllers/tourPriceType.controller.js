@@ -67,19 +67,14 @@ export async function getInfoTourPriceType(req, res){
             ,include: [{model: GcmTrIP,as:'tb_gcm_tr_included_in_price', attributes: [['translation','tr'],['language_code','lc']]}]
         }]})
         //--
-        if ((language == "es") || (!language)) {
-            included_ip = included_ip.map(e => {
-                e = e.toJSON()
+        included_ip = included_ip.map(e => {
+            e = e.toJSON()
+            if (e.tb_gcm_included_in_price.language_code == language) {
                 e.description = e.tb_gcm_included_in_price.description
                 e.language_code = e.tb_gcm_included_in_price.language_code
                 delete e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price
                 delete e.tb_gcm_included_in_price
-                return e
-            })
-        } else if(language == "en")
-        {
-            included_ip = included_ip.map(e => {
-                e = e.toJSON()
+            } else {
                 e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price = e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price.map(ee =>{
                     e.description = ee.tr
                     e.language_code = ee.lc
@@ -87,9 +82,10 @@ export async function getInfoTourPriceType(req, res){
                 })
                 delete e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price
                 delete e.tb_gcm_included_in_price
-                return e
-            })
-        }
+            }
+            return e
+        })
+        //--
         //Get all ip's items from gcm_ip
         let ipItems = await GcmIP.findAll({ where: { product_type: 11 },attributes: [['included_in_price_id','_id'],'description','language_code','product_type'] })
 

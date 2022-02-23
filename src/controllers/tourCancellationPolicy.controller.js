@@ -43,33 +43,29 @@ export async function getInfoTourCancellationP(req, res) {
         }
         })
         //--
-        if ((language == "es") || (!language)) {
             cancellation_policy = cancellation_policy.map(e => {
                 e = e.toJSON()
-                e.title = e.tb_gcm_cancellation_policy.title
-                e.description = e.tb_gcm_cancellation_policy.description
-                e.more_info = e.tb_gcm_cancellation_policy.more_info
-                e.language_code = e.tb_gcm_cancellation_policy.language_code
-                delete e.tb_gcm_cancellation_policy.tb_gcm_tr_cancellation_policy
-                delete e.tb_gcm_cancellation_policy
+                if(e.tb_gcm_cancellation_policy.language_code == language)
+                {
+                    e.title = e.tb_gcm_cancellation_policy.title
+                    e.description = e.tb_gcm_cancellation_policy.description
+                    e.more_info = e.tb_gcm_cancellation_policy.more_info
+                    e.language_code = e.tb_gcm_cancellation_policy.language_code
+                    delete e.tb_gcm_cancellation_policy.tb_gcm_tr_cancellation_policy
+                    delete e.tb_gcm_cancellation_policy
+                }else{
+                    e.tb_gcm_cancellation_policy.tb_gcm_tr_cancellation_policy.map(ee =>{
+                        e.title = ee.trt
+                        e.description = ee.trd
+                        e.more_info = ee.trmi
+                        e.language_code = ee.lc
+                        return ee
+                    })
+                    delete e.tb_gcm_cancellation_policy.tb_gcm_tr_cancellation_policy
+                    delete e.tb_gcm_cancellation_policy
+                }
                 return e
             })
-        } else if(language == "en")
-        {
-            cancellation_policy = cancellation_policy.map(e => {
-                e = e.toJSON()
-                e.tb_gcm_cancellation_policy.tb_gcm_tr_cancellation_policy.map(ee =>{
-                    e.title = ee.trt
-                    e.description = ee.trd
-                    e.more_info = ee.trmi
-                    e.language_code = ee.lc
-                    return ee
-                })
-                delete e.tb_gcm_cancellation_policy.tb_gcm_tr_cancellation_policy
-                delete e.tb_gcm_cancellation_policy
-                return e
-            })
-        }
         //--
         //Get all ip's items from gcm_ip
         let cpItems = await GcmCancellationP.findAll({ where: { product_type: 11 }, attributes: [['cancellation_policy_id', '_id'],'title','description', 'more_info','language_code','percent_discount','product_type'] })
