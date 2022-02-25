@@ -7,7 +7,7 @@ const ToTrActivity = require('../../models').tb_tt_to_tr_activity
 export async function addInfoTourItinerary(req, res) {
     const { tour_id } = req.params
     const { product_type, language_code, flexible_schedules, duration_type, time_duration,
-        flexible_itinerary } = req.body
+        flexible_itinerary, mg_body } = req.body
     let fLanguage 
     let trAct   
 
@@ -54,9 +54,18 @@ export async function addInfoTourItinerary(req, res) {
             return newFlexibleItineraries
         }))
         if (iFlexibleItineraries && upToMdTour) {
-            res.json({
-                msg: "REGISTRO INGRESADO CON EXITO!"
-            })
+            let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.durationType = duration_type
+                addInfo.timeDuration = time_duration
+                addInfo.flexibleSchedules = flexible_schedules
+                addInfo.startTimes = mg_body.startTimes
+                addInfo.itineraryTour = mg_body.activity
+                mgTour.update({ mg_tour_body: addInfo })
+
+                res.json({ msg: "Información Agregada!" })
+            }
         }
     } catch (error) {
         res.json({
@@ -82,7 +91,7 @@ export async function getInfoTourItinerary(req, res) {
         getToItinerary = getToItinerary.map(e => {
             e = e.toJSON()
                 e.tb_tt_to_activity.map(eac =>{
-                    if (eac.language_code == language) {
+                    if ((eac.language_code == language) || (!language)) {
                         delete eac.tb_tt_to_tr_activity
                     }else{
                         eac.description = eac.tb_tt_to_tr_activity[0].translation

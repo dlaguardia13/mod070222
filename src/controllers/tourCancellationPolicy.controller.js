@@ -6,7 +6,7 @@ const GcmTrCancellationP = require('../../models').tb_gcm_tr_cancellation_policy
 
 export async function addInfoTourCancellationP(req, res) {
     const { tour_id } = req.params
-    const { changes_in_reservation, cancellation_policy } = req.body
+    const { changes_in_reservation, cancellation_policy, mg_body } = req.body
     try {
         //MD TOUR
         let upToMdTour = await ToMdTour.findByPk(tour_id, { attributes: ['tour_id', 'changes_in_reservation'] })
@@ -21,7 +21,17 @@ export async function addInfoTourCancellationP(req, res) {
                 { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_cancellation_policy_id', 'custom_percent', 'custom_no_days'] })
             return opAsCpTo
         }))
-        if (opAsCpTo) { res.json({ msg: 'Informacion agregada con exito' }) }
+        if (opAsCpTo) { 
+            let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.cancellationPolicy = mg_body.cancellationPolicy
+                addInfo.customCancellationPolicy = mg_body.customCancellationPolicy
+                addInfo.changesInReservation = changes_in_reservation
+                mgTour.update({ mg_tour_body: addInfo })    
+                res.json({ msg: "Información agregada con exito" })
+            } 
+        }
 
     } catch (error) {
         res.json({
@@ -45,7 +55,7 @@ export async function getInfoTourCancellationP(req, res) {
         //--
             cancellation_policy = cancellation_policy.map(e => {
                 e = e.toJSON()
-                if(e.tb_gcm_cancellation_policy.language_code == language)
+                if((e.tb_gcm_cancellation_policy.language_code == language) || (!language))
                 {
                     e.title = e.tb_gcm_cancellation_policy.title
                     e.description = e.tb_gcm_cancellation_policy.description

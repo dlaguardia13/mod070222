@@ -94,7 +94,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       mg_tour_body: {
-        type: Sequelize.STRING
+        type: Sequelize.JSON
       },
       step_validate: {
         type: Sequelize.STRING

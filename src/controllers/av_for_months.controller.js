@@ -4,7 +4,7 @@ const DaysAvPerMonth = require('../../models').tb_tt_to_days_av_per_month
 
 export async function addInfoTourAvailability(req, res) {
     const { tour_id } = req.params
-    const { available_all_year, months } = req.body
+    const { available_all_year, months, mg_body } = req.body
 
     try {
         //PART 1
@@ -31,9 +31,14 @@ export async function addInfoTourAvailability(req, res) {
         }))
 
         if (Imonths && upTour) {
-            res.json({
-                msg: "Información agregada con exito"
-            })
+            let mgTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.availableAllYear = available_all_year
+                addInfo.availability = mg_body
+                mgTour.update({ mg_tour_body: addInfo })    
+                res.json({ msg: "Información agregada con exito" })
+            }
         }
     } catch (error) {
         res.json({
@@ -45,12 +50,7 @@ export async function addInfoTourAvailability(req, res) {
 export async function getInfoTourAvailability(req, res) {
     const { tour_id } = req.params
     try {
-        let infoTourAvailability = await Md_tour.findByPk(tour_id, {
-            attributes: ['tour_id', 'available_all_year']/*,
-            include: 
-                {model: AvForMonths, as: 'tb_tt_to_av_for_months', attributes: [['av_for_months_id','_id'],'initial_month','final_month'],
-        include: {model: DaysAvPerMonth, as: 'tb_tt_to_days_av_per_month', attributes: [['days_av_per_month_id','_id'],'day']}},*/
-        })
+        let infoTourAvailability = await Md_tour.findByPk(tour_id, { attributes: ['tour_id', 'available_all_year'] })
         let extraInfo = await AvForMonths.findAll({
             attributes: [['av_for_months_id', '_id'], 'initial_month', 'final_month'],
             where: { tb_tt_to_md_tour_tour_id: tour_id }, include: { model: DaysAvPerMonth, as: 'tb_tt_to_days_av_per_month', attributes: [['days_av_per_month_id', '_id'], 'day'] }

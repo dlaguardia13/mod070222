@@ -7,8 +7,29 @@ const City = require('../../models').tb_gcm_city
 export async function createAddress(req, res) {
     const { tour_id } = req.params
     const { tb_gcm_country_country_id,
-        tb_gcm_state_state_id, tb_gcm_city_city_id, real_address, latitude, length } = req.body
+        tb_gcm_state_state_id, tb_gcm_city_city_id, real_address, latitude, length, mg_body } = req.body
     try {
+        let mgBodyAddress = {
+            country: mg_body.mg_country,
+            state: mg_body.mg_state,
+            city: mg_body.mg_city,
+            realAddress: real_address,
+            latitude: latitude,
+            length: length
+        }
+        //--
+        let upTour = await Md_tour.findOne({
+            where: {
+                tour_id
+            },
+            attributes: ['tour_id','mg_tour_body']
+        })
+        if (upTour) {
+            let addInfo = upTour.toJSON().mg_tour_body
+            addInfo.placeOfDeparture = mgBodyAddress
+            upTour.update({ mg_tour_body: addInfo })
+        }
+        //--
         const [ addressData, created] = await AddressesTour.findOrCreate({
             where: {
                 tb_tt_to_md_tour_tour_id: tour_id

@@ -36,7 +36,11 @@ const TourSchema = new Schema({
             original: { type: String, default: null },
             translation: { type: Array, default: null } 
         }],
-    additionalInformation: [{ type: Objectid, default: null }],
+    additionalInformation: [{
+        name: { type: String, default: null },
+        languageCode: String,
+        translations: { translation: String, languageCode: String }
+    }],
     //  Step 5
     mainPicture: { type: Objectid, default: null },
     multimediaGallery: [{ type: Objectid, default: null }],

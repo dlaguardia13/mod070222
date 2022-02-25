@@ -9,8 +9,7 @@ const TrYouWillSee = require("../../models").tb_tt_to_tr_you_will_see
 
 export async function addInfoTour(req, res){
     const { tour_id } = req.params
-    let { tb_gcm_complement_complement_id, you_will_see, additional_information, language_code, enabled, removed} = req.body
-
+    let { tb_gcm_complement_complement_id, you_will_see, additional_information, language_code, enabled, removed, mg_body} = req.body
     let tr_1
     let tr_2
     let fLanguage = language_code
@@ -61,8 +60,20 @@ export async function addInfoTour(req, res){
 
             return newWilSee, newWilSeeTr
         }))
+        if (whats && additionalInfo && willSee) {
+            //mg_tour_body
+            let mgTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body']})
+                if (mgTour) {
+                    let addInfo = mgTour.toJSON().mg_tour_body
+                    addInfo.whatToBring = mg_body.whatToBring
+                    addInfo.additionalInformation = mg_body.additionalInformation
+                    addInfo.nYouWillSee = mg_body.nYouWillSee
+                    mgTour.update({ mg_tour_body: addInfo })
 
-        if (whats && additionalInfo && willSee) { res.json({ msg: "Informacion agregada" }) }
+                    res.json({ msg: "Informacion agregada" })
+                }  
+        }
+        
     } catch (error) { res.json({ msg: error.message }) }
 } 
 
@@ -89,7 +100,7 @@ export async function getInfoTour(req, res){
     
         cm_what = cm_what.map(e => {
             e = e.toJSON()
-            if (e.tb_gcm_complement.language_code == language) {
+            if ((e.tb_gcm_complement.language_code == language) || (!language)) {
                 e.name = e.tb_gcm_complement.name
                 e.language_code = e.tb_gcm_complement.language_code
                 delete e.tb_gcm_complement.tb_gcm_tr_complement

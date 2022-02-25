@@ -11,12 +11,12 @@ const Gcm_Tr_Complement = require("../../models").tb_gcm_tr_complement
 
 export async function addInfoTour(req, res) {
     const { tour_id } = req.params
-    const { capacity, before_booking,tb_gcm_cm_complement_id_difficult,tb_gcm_cm_complement_id_suit_to, tb_gcm_category_category_id,tb_gcm_language_language_id,enabled, removed } = req.body
+    const { capacity, before_booking,tb_gcm_cm_complement_id_difficult,tb_gcm_cm_complement_id_suit_to, tb_gcm_category_category_id,
+            tb_gcm_language_language_id,enabled, removed, mg_body } = req.body
     try {
         //CAPACITY & BOOKING
         const upTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id', 'capacity', 'before_booking'] })
         if (upTour) { upTour.update({ capacity, before_booking }) }
-        
         //Cleaning tables
         const tourDifficultD = await Tour_difficult.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
         const tourSuitToD = await Tour_suit_to.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
@@ -35,7 +35,21 @@ export async function addInfoTour(req, res) {
             return newLanguage
         }))    
 
-        if (newDifficult && newSuitTo && newCategory && languages) { res.json({msg: "Informacion Agregada al Tour" }) }
+        if (newDifficult && newSuitTo && newCategory && languages) { 
+            //mg_body
+            let mgTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.capacity = capacity
+                addInfo.beforeBooking = before_booking
+                addInfo.category = mg_body.category,
+                addInfo.difficultyLevel = mg_body.difficultyLevel,
+                addInfo.aptTo = mg_body.aptTo
+                addInfo.language = [ mg_body.language[0], mg_body.language[1] ]
+                mgTour.update({ mg_tour_body: addInfo })
+                res.json({msg: "Informacion Agregada al Tour" })
+            } 
+        }
 
     } catch (error) {
         res.json({
@@ -57,10 +71,10 @@ export async function getIngfoTour(req, res) {
             ]
         })
         //---
-        let suit_to = await Tour_suit_to.findAll({ where: {tb_tt_to_md_tour_tour_id: tour_id},
+        let suit_to = await Tour_suit_to.findOne({ where: {tb_tt_to_md_tour_tour_id: tour_id},
             attributes: [['tb_gcm_cm_complement_id','_id']], include: { model: Gcm_Complement, as: 'tb_gcm_complement', attributes: ['name','language_code'], 
                 include: {model: Gcm_Tr_Complement,as: 'tb_gcm_tr_complement', attributes: ['translation', 'language_code']}} })
-        let to_difficult = await Tour_difficult.findAll({ where: {tb_tt_to_md_tour_tour_id: tour_id},
+        let to_difficult = await Tour_difficult.findOne({ where: {tb_tt_to_md_tour_tour_id: tour_id},
             attributes: [['tb_gcm_cm_complement_id','_id']], include: { model: Gcm_Complement, as: 'tb_gcm_complement', attributes: ['name', 'language_code'], 
                 include: {model: Gcm_Tr_Complement,as: 'tb_gcm_tr_complement', attributes: ['translation','language_code']}} })
         //Get all languages from gcm_languages
@@ -72,31 +86,32 @@ export async function getIngfoTour(req, res) {
             return languages 
         })
         //--
-            suit_to = suit_to.map(e => {
-                e = e.toJSON()
-                if(e.tb_gcm_complement.language_code == language)
-                {
-                    delete e.tb_gcm_complement.tb_gcm_tr_complement
-                } else {
-                    e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
-                    e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
-                    delete e.tb_gcm_complement.tb_gcm_tr_complement
-                    delete e.tb_gcm_complement
-                }
-                return e
-            })
-            to_difficult = to_difficult.map(e => {
-                e = e.toJSON()
-                if (e.tb_gcm_complement.language_code == language) {
-                    delete e.tb_gcm_complement.tb_gcm_tr_complement    
-                }else{
-                    e.name = e.tb_gcm_complement.tb_gcm_tr_complement.translation
-                    e.language_code = e.tb_gcm_complement.tb_gcm_tr_complement.language_code
-                    delete e.tb_gcm_complement.tb_gcm_tr_complement
-                    delete e.tb_gcm_complement
-                }
-                return e
-            })
+        suit_to = suit_to.toJSON()
+            if((suit_to.tb_gcm_complement.language_code == language) || (!language))
+            {
+                suit_to.name = suit_to.tb_gcm_complement.name
+                suit_to.language_code = suit_to.tb_gcm_complement.language_code
+                delete suit_to.tb_gcm_complement.tb_gcm_tr_complement
+                delete suit_to.tb_gcm_complement
+            } else {
+                suit_to.name = suit_to.tb_gcm_complement.tb_gcm_tr_complement.translation
+                suit_to.language_code = suit_to.tb_gcm_complement.tb_gcm_tr_complement.language_code
+                delete suit_to.tb_gcm_complement.tb_gcm_tr_complement
+                delete suit_to.tb_gcm_complement
+            }
+        to_difficult = to_difficult.toJSON()
+            if ((to_difficult.tb_gcm_complement.language_code == language) || (!language))
+            {
+                to_difficult.name = to_difficult.tb_gcm_complement.name
+                to_difficult.language_code = to_difficult.tb_gcm_complement.language_code
+                delete to_difficult.tb_gcm_complement.tb_gcm_tr_complement
+                delete to_difficult.tb_gcm_complement
+            } else {
+                to_difficult.name = to_difficult.tb_gcm_complement.tb_gcm_tr_complement.translation
+                to_difficult.language_code = to_difficult.tb_gcm_complement.tb_gcm_tr_complement.language_code
+                delete to_difficult.tb_gcm_complement.tb_gcm_tr_complement
+                delete to_difficult.tb_gcm_complement
+            }
         //--
         allAdditional = allAdditional.toJSON()
         allAdditional.tb_tt_to_as_tour_cm_suit_to = suit_to
@@ -106,7 +121,7 @@ export async function getIngfoTour(req, res) {
         res.json(allAdditional)
     } catch (error) {
         res.json({
-            msg: error
+            msg: error.message
         })
     }
 }

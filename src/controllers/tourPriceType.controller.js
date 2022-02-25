@@ -7,7 +7,7 @@ const GcmTrIP = require("../../models").tb_gcm_tr_included_in_price
 
 export async function addInfoTourPriceType(req, res){
     const { tour_id } = req.params
-    const { product_type, type_of_tour, price_private, price_collective, tb_tt_to_as_tour_ip } = req.body
+    const { product_type, type_of_tour, price_private, price_collective, tb_tt_to_as_tour_ip, mg_body } = req.body
     try {
         //MD TOUR
         let upToMdTour = await ToMdTour.findByPk(tour_id,{ attributes: ['tour_id','product_type', 'type_of_tour'] })
@@ -42,7 +42,22 @@ export async function addInfoTourPriceType(req, res){
             return BdAsTourIp
         }))
         
-        if (BdAsTourIp && BdToPriceType && upToMdTour) { res.json({msg: "Se ha ingresado los datos"})}
+        if (BdAsTourIp && BdToPriceType && upToMdTour) { 
+            let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.typeOfTour = type_of_tour
+                addInfo.price = mg_body.price
+                addInfo.minOfPeople = mg_body.minOfPeople
+                addInfo.privatePrice = mg_body.privatePrice
+                addInfo.collectivePrice = mg_body.collectivePrice
+                addInfo.localPrices = mg_body.localPrices
+                addInfo.foreingPrices = mg_body.foreingPrices
+                addInfo.includedInPrice = mg_body.includedInPrice
+                mgTour.update({ mg_tour_body: addInfo })    
+                res.json({ msg: "Información agregada con exito" })
+            }
+        }
     } catch (error) {
         res.json({
             msg: error.message
@@ -69,7 +84,7 @@ export async function getInfoTourPriceType(req, res){
         //--
         included_ip = included_ip.map(e => {
             e = e.toJSON()
-            if (e.tb_gcm_included_in_price.language_code == language) {
+            if ((e.tb_gcm_included_in_price.language_code == language) || (!language)) {
                 e.description = e.tb_gcm_included_in_price.description
                 e.language_code = e.tb_gcm_included_in_price.language_code
                 delete e.tb_gcm_included_in_price.tb_gcm_tr_included_in_price

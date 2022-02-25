@@ -1,4 +1,3 @@
-import e from "express";
 import { translateArray } from "../controllers/general/translator.controller" 
 const { Op } = require("sequelize");
 const Md_tour = require("../../models").tb_tt_to_md_tour
@@ -13,6 +12,18 @@ export async function createTour(req, res) {
     let tr
     let fLanguage
     try {
+            if (language_code == "en") {
+                tr = await translateArray([name, title, description], language_code, 'en-es')
+                fLanguage = "es"
+            } else if(language_code == "es"){ 
+                tr = await translateArray([name, title, description], language_code, 'es-en')
+                fLanguage = "en" 
+            }
+        //--
+        let mgBody = {name: name, nTitle: {original: title, translation: [{languageCode: fLanguage, translation: tr.translations[1].translation}]}, 
+            nDescription: {original: description, translation: [{languageCode: fLanguage, translation: tr.translations[2].translation}]} }
+            //console.log(mgBody)
+        //--    
         let newTour = await Md_tour.create({
             tb_bp_md_business_profile_id, 
             tb_gcm_status_status_id,
@@ -23,20 +34,12 @@ export async function createTour(req, res) {
             flexible_schedules,
             language_code,
             enabled,
-            removed
+            removed,
+            mg_tour_body: mgBody
         },{
             fields: [ 'tb_bp_md_business_profile_id', 'tb_gcm_status_status_id','slug','name', 'title', 'description',
-            'capacity', 'flexible_schedules','language_code', 'enabled', 'removed'] 
+            'capacity', 'flexible_schedules','language_code', 'enabled', 'removed','mg_tour_body'] 
         })
-        if (newTour) {
-            if (language_code == "en") {
-                tr = await translateArray([name, title, description], language_code, 'en-es')
-                fLanguage = "es"
-            } else if(language_code == "es"){ 
-                tr = await translateArray([name, title, description], language_code, 'es-en')
-                fLanguage = "en" 
-            }
-
             let newTrTour = await MdTrTour.create({
                 tb_tt_to_md_tour_tour_id: newTour.tour_id,
                 language_code: fLanguage,
@@ -47,7 +50,7 @@ export async function createTour(req, res) {
             }, { fields: ['tb_tt_to_md_tour_tour_id', 'language_code', 'title', 'description' , 'enabled', 'removed'] 
         })
             if (newTour && newTrTour) { res.json({msg: 'Hecho!'}) }
-        } 
+
     } catch (error) { res.json({ msg: error.message }) }
 }
 
@@ -58,7 +61,7 @@ export async function getAllTours(req, res) {
         if(!search){search = "%"}
         if(!offset && !limit){offset = 0,limit = 10}
 
-        const AllTours = await Md_tour.findAndCountAll({
+        let AllTours = await Md_tour.findAndCountAll({
             where: { name: { [Op.like]: `${search}` } },
             attributes: ['tour_id','name','title','description','language_code'],
             include: [ {model: AddressesTour, as: 'tb_tt_to_address_tour', attributes: ['real_address'], include: [
@@ -71,16 +74,13 @@ export async function getAllTours(req, res) {
         //--
         AllTours.rows = AllTours.rows.map(e => {
                 e = e.toJSON()
-                if(e.language_code == language){
+                if((e.language_code == language) || (!language)){
                     delete e.tb_tt_to_tr_tour
                 }else{
-                    e.tb_tt_to_tr_tour.map(ee => {
-                        e.title = ee.title
-                        e.description = ee.description
-                        e.language_code = ee.language_code
-                        delete e.tb_tt_to_tr_tour
-                        return ee
-                    })
+                    e.title = e.tb_tt_to_tr_tour.title
+                    e.description = e.tb_tt_to_tr_tour.description
+                    e.language_code = e.tb_tt_to_tr_tour.language_code
+                    delete e.tb_tt_to_tr_tour
                 }
                 return e
         })
@@ -93,29 +93,26 @@ export async function getOneTour(req, res) {
     const { tour_id } = req.params
     let { language } = req.query
     try {
-        let oneTour = await Md_tour.findAll({
+        let oneTour = await Md_tour.findOne({
             where: { tour_id },
-            attributes: ['tour_id','name','title','description','language_code'],
+            attributes: ['tour_id','name','title','description','language_code','mg_tour_id','mg_tour_body'],
             include: [ {model: AddressesTour, as: 'tb_tt_to_address_tour', attributes: ['real_address'], include: [
                 {model: GcmState ,as: 'tb_gcm_state', attributes: ['state']},
                 {model: GcmCity ,as: 'tb_gcm_city', attributes: ['city']}
             ]}, {model: MdTrTour,as: 'tb_tt_to_tr_tour', attributes:['title','description','language_code']}]
         })
         //--
-        oneTour = oneTour.map(e => {
-            e = e.toJSON()
-            if(e.language_code == language){
-                delete e.tb_tt_to_tr_tour
-            }else{
-                e.title = e.tb_tt_to_tr_tour[0].title
-                e.description = e.tb_tt_to_tr_tour[0].description
-                e.language_code = e.tb_tt_to_tr_tour[0].language_code
-                delete e.tb_tt_to_tr_tour
-            }
-            return e
-        })                   
+        oneTour = oneTour.toJSON()
+        if((oneTour.language_code == language) || (!language)){
+            delete oneTour.tb_tt_to_tr_tour;
+        }else{
+            oneTour.title = oneTour.tb_tt_to_tr_tour.title
+            oneTour.description = oneTour.tb_tt_to_tr_tour.description
+            oneTour.language_code = oneTour.tb_tt_to_tr_tour.language_code
+            delete oneTour.tb_tt_to_tr_tour
+        }                   
         //--    
-        if (oneTour) { res.json(oneTour[0]) }
+        if (oneTour) { res.json(oneTour) }
     } catch (error) {
         res.json({
             msg: error.message
@@ -124,7 +121,7 @@ export async function getOneTour(req, res) {
 }
 
 export async function updateOneTour(req, res) {
-    const { name, title, description } = req.body
+    const { name, title, description, mg_tour_body } = req.body
     const { tour_id } = req.params
 
     try {
@@ -132,13 +129,14 @@ export async function updateOneTour(req, res) {
             where: {
                 tour_id
             },
-            attributes: ['tour_id', 'name', 'title', 'description']
+            attributes: ['tour_id', 'name', 'title', 'description','mg_tour_body']
         })
         if (upTour) {
             upTour.update({
                 name,
                 title,
-                description
+                description,
+                mg_tour_body
             })
         }
         res.json({

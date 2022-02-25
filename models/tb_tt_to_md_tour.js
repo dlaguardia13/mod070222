@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })
 
-      tb_tt_to_md_tour.hasMany(models.tb_tt_to_tr_tour, {
+      tb_tt_to_md_tour.hasOne(models.tb_tt_to_tr_tour, {
         as: 'tb_tt_to_tr_tour',
         foreignKey: 'tb_tt_to_md_tour_tour_id'
       })

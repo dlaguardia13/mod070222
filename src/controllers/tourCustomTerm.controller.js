@@ -5,7 +5,7 @@ const ToTrCustomTerm = require('../../models').tb_tt_to_tr_custom_term
 
 export async function addInfoTourCustomT(req, res){
     const { tour_id } = req.params
-    let { custom_term } = req.body
+    let { custom_term, mg_body } = req.body
     let fLanguage
     let ctTr
     try {
@@ -30,9 +30,15 @@ export async function addInfoTourCustomT(req, res){
 
             return opToCustomTerm, opToCustomTermTr
         }))
-        if (Ict) { res.json({ msg: 'Informacion agregada con exito' }) 
-        res.status(200)}
+        if (Ict) { 
+            let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.customTerms = mg_body
+                mgTour.update({ mg_tour_body: addInfo })
 
+                res.json({ msg: "Información Agregada!" })
+            }}
     } catch (error) {
         res.json({ msg: error.message })
         res.status(500)
@@ -43,17 +49,15 @@ export async function getInfoTourCustomT(req, res){
     const { tour_id } = req.params
     const { language } = req.query
     try {
-        let allCT = await ToMdTour.findAll({
+        let allCT = await ToMdTour.findOne({
             where: { tour_id },
             attributes: ['tour_id']
             ,include: { model: ToCustomTerm, as: 'tb_tt_to_custom_term', attributes: [['custom_term_id', '_id'], 'custom_term', 'language_code','product_type'],
             include: {model:ToTrCustomTerm, as: 'tb_tt_to_tr_custom_term', attributes: ['translation','language_code']} }
         })
-        allCT = allCT.map(e => {
-            e = e.toJSON()
-            e.tb_tt_to_custom_term.map(ee => {
-                //ee = ee.toJSON()
-                if (ee.language_code == language) {
+            allCT = allCT.toJSON()
+            allCT.tb_tt_to_custom_term.map(ee => {
+                if ((ee.language_code == language) || (!language)) {
                     delete ee.tb_tt_to_tr_custom_term    
                 }else{
                     ee.custom_term = ee.tb_tt_to_tr_custom_term[0].translation
@@ -61,11 +65,9 @@ export async function getInfoTourCustomT(req, res){
                     ee.product_type = ee.product_type
                     delete ee.tb_tt_to_tr_custom_term
                 }
-            return ee
+                return ee
             })
-        return e
-        })
-        if (allCT) { res.json(allCT[0])}
+        if (allCT) { res.json(allCT)}
 
     } catch (error) {
         res.json({ msg: error.message })
