@@ -13,7 +13,10 @@ module.exports = {
         references: {
           model: 'tb_tt_to_md_tour',
           key: 'tour_id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+
       },
       tb_gcm_category_category_id: {
         type: Sequelize.UUID,

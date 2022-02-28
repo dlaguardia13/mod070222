@@ -13,4 +13,4 @@ const GeneralInformationSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('GeneralInformation',GeneralInformationSchema)
+module.exports = mongoose.model('generalInformation',GeneralInformationSchema,'generalInformation')

@@ -5,6 +5,9 @@ const AddressesTour = require('../../models').tb_tt_to_address_tour
 const GcmState = require('../../models').tb_gcm_state
 const GcmCity = require('../../models').tb_gcm_city
 const MdTrTour = require('../../models').tb_tt_to_tr_tour
+//  Mongo
+const TourMg = require('../../models/mg.models/tour')
+const GeneralInformation = require('../../models/mg.models/generalInformation.model')
 
 export async function createTour(req, res) {
     let { tb_bp_md_business_profile_id, tb_gcm_status_status_id,name, title, description,
@@ -164,5 +167,41 @@ export async function deleteOneTour(req, res) {
         res.json({
             msg: error
         })
+    }
+}
+
+export async function publicInformation(req,res){
+    const { tour_id } = req.params
+    let ids = []
+    let upMgTour
+    let newMgTour
+    try {
+        let mgTourBody = await Md_tour.findOne({where:{ tour_id }, attributes: ['tour_id','mg_tour_id','mg_tour_body']})
+        if (mgTourBody) { 
+            await Promise.all(mgTourBody.mg_tour_body.additionalInformation.map(async (e) =>{
+                e.languageCode = 'en'
+                let newAdditionalInformation = await GeneralInformation.create(e)
+                ids.push(newAdditionalInformation._id)
+            }))
+
+            mgTourBody.mg_tour_body.additionalInformation = ids
+            
+            if (mgTourBody.mg_tour_id) {
+                let gMgTour = await TourMg.findOne({_id: mgTourBody.mg_tour_id})
+                console.log()
+                Promise.all(gMgTour.additionalInformation.map(async (e) =>{
+                    await GeneralInformation.findByIdAndDelete({_id: e})
+                }))
+                upMgTour = await TourMg.findOneAndUpdate({_id: mgTourBody.mg_tour_id}, 
+                    {additionalInformation: mgTourBody.mg_tour_body.additionalInformation},
+                    {new: true})
+            }else{
+                newMgTour = await TourMg.create(mgTourBody.mg_tour_body)
+                mgTourBody.update({mg_tour_id: newMgTour._id.toString()})
+            }
+            if (newMgTour || upMgTour) { res.json({ msg: "Done!"}) }
+        }
+    } catch (error) {
+        res.json({ msg: error.message })
     }
 }

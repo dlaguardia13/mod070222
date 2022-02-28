@@ -36,11 +36,7 @@ const TourSchema = new Schema({
             original: { type: String, default: null },
             translation: { type: Array, default: null } 
         }],
-    additionalInformation: [{
-        name: { type: String, default: null },
-        languageCode: String,
-        translations: { translation: String, languageCode: String }
-    }],
+    additionalInformation: [{ type: Objectid, default: null}],
     //  Step 5
     mainPicture: { type: Objectid, default: null },
     multimediaGallery: [{ type: Objectid, default: null }],
@@ -120,6 +116,7 @@ const TourSchema = new Schema({
     schedule: { type: String, default: null },
     collective: { type: Boolean, default: null },
     //  Other Projects
+    slug: String,
     pgProfile: { type: String } 
 },{
     timestamps: true,
@@ -128,4 +125,4 @@ const TourSchema = new Schema({
 
 TourSchema.plugin(slugHero, {doc: 'Tour', field: 'name'})
 
-module.exports = mongoose.model('Tour', TourSchema);
+module.exports = mongoose.model('tour', TourSchema, 'tour');
