@@ -14,4 +14,4 @@ const AptToSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('AptTo',AptToSchema)
+module.exports = mongoose.model('aptTo',AptToSchema,'aptTo')

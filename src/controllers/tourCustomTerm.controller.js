@@ -5,18 +5,19 @@ const ToTrCustomTerm = require('../../models').tb_tt_to_tr_custom_term
 
 export async function addInfoTourCustomT(req, res){
     const { tour_id } = req.params
-    let { custom_term, mg_body } = req.body
+    let { custom_term } = req.body
     let fLanguage
-    let ctTr
+    let customTerms_ = []
+    
     try {
-        const opToCustomTermD = await ToCustomTerm.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
+        await ToCustomTerm.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
 
         let Ict = await Promise.all(custom_term.map(async (ct) => {
             let opToCustomTerm = await ToCustomTerm.create({
                 tb_tt_to_md_tour_tour_id: tour_id, custom_term: ct.custom_term, language_code: ct.language_code, product_type: ct.product_type
             },
                 { fields: ['tb_tt_to_md_tour_tour_id', 'custom_term', 'language_code', 'product_type'] })
-
+                let ctTr
                 if (ct.language_code == "en") {
                     ctTr = await translateArray(ct.custom_term, ct.language_code, 'en-es')
                     fLanguage = "es"
@@ -27,16 +28,25 @@ export async function addInfoTourCustomT(req, res){
                 let opToCustomTermTr = await ToTrCustomTerm.create({ tb_tt_ct_custom_term_id: opToCustomTerm.custom_term_id, 
                     language_code: fLanguage, translation: ctTr.translations[0].translation },
                     { fields: ['tb_tt_ct_custom_term_id', 'language_code','translation'] })
+                
+                    customTerms_.push({
+                        original: fLanguage == 'en' ? ctTr.translations[0].translation:ct.custom_term,
+                        translations: {
+                            translation: fLanguage == 'en' ? ct.custom_term:ctTr.translations[0].translation,
+                            languageCode: fLanguage == 'en' ? ct.language_code:fLanguage 
+                        }
+                    })    
 
             return opToCustomTerm, opToCustomTermTr
         }))
         if (Ict) { 
+            //  MONGO'S QUERIES
             let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
             if (mgTour) {
                 let addInfo = mgTour.toJSON().mg_tour_body
-                addInfo.customTerms = mg_body
+                addInfo.customTerms = customTerms_
                 mgTour.update({ mg_tour_body: addInfo })
-
+                
                 res.json({ msg: "Información Agregada!" })
             }}
     } catch (error) {

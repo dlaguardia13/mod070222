@@ -7,6 +7,8 @@ const GcmTrCancellationP = require('../../models').tb_gcm_tr_cancellation_policy
 export async function addInfoTourCancellationP(req, res) {
     const { tour_id } = req.params
     const { changes_in_reservation, cancellation_policy, mg_body } = req.body
+    let customCancellationPolicy_ = []
+    let cancelationPolicy_ = []
     try {
         //MD TOUR
         let upToMdTour = await ToMdTour.findByPk(tour_id, { attributes: ['tour_id', 'changes_in_reservation'] })
@@ -21,14 +23,28 @@ export async function addInfoTourCancellationP(req, res) {
                 { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_cancellation_policy_id', 'custom_percent', 'custom_no_days'] })
             return opAsCpTo
         }))
+        //  MONGO: mg_tour_body - STEP 8
         if (opAsCpTo) { 
+            //  MONGO'S QUERIES
             let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            await Promise.all(cancellation_policy.map(async (eCp) => {
+                let cp_ = await GcmCancellationP.findOne({where:{cancellation_policy_id: eCp._id}, attributes:['mg_cancellation_policy_id']})
+                cancelationPolicy_.push(cp_.mg_cancellation_policy_id)
+                customCancellationPolicy_.push({
+                    cancellationPolicy: cp_.mg_cancellation_policy_id,
+                    noDays: eCp.custom_no_days,
+                    percent: eCp.custom_percent 
+                }) 
+            }))
+
             if (mgTour) {
                 let addInfo = mgTour.toJSON().mg_tour_body
-                addInfo.cancellationPolicy = mg_body.cancellationPolicy
-                addInfo.customCancellationPolicy = mg_body.customCancellationPolicy
+                
+                addInfo.cancellationPolicy = cancelationPolicy_
+                addInfo.customCancellationPolicy = customCancellationPolicy_
                 addInfo.changesInReservation = changes_in_reservation
-                mgTour.update({ mg_tour_body: addInfo })    
+                mgTour.update({ mg_tour_body: addInfo })
+            
                 res.json({ msg: "Información agregada con exito" })
             } 
         }

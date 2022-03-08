@@ -7,4 +7,4 @@ const LanguageSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('Language',LanguageSchema)
+module.exports = mongoose.model('language',LanguageSchema,'language')

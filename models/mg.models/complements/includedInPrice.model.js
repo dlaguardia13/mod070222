@@ -14,4 +14,4 @@ const IncludedInPriceSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('IncludedInPrice',IncludedInPriceSchema)
+module.exports = mongoose.model('includedInPrice',IncludedInPriceSchema,'includedInPrice')

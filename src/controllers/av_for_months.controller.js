@@ -4,8 +4,8 @@ const DaysAvPerMonth = require('../../models').tb_tt_to_days_av_per_month
 
 export async function addInfoTourAvailability(req, res) {
     const { tour_id } = req.params
-    const { available_all_year, months, mg_body } = req.body
-
+    const { available_all_year, months } = req.body 
+    let availability_ = []
     try {
         //PART 1
         const upTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id', 'available_all_year'] })
@@ -19,15 +19,20 @@ export async function addInfoTourAvailability(req, res) {
                 tb_tt_to_md_tour_tour_id: tour_id,
                 initial_month: Imonths.initial_month, final_month: Imonths.final_month,
                 enabled: Imonths.enabled, removed: Imonths.removed
-            },
-                { fields: ['tb_tt_to_md_tour_tour_id', 'initial_month', 'final_month', 'enabled', 'removed'] })
+            }, { fields: ['tb_tt_to_md_tour_tour_id', 'initial_month', 'final_month', 'enabled', 'removed'] })
 
-            let Idays = await Promise.all(Imonths.day.map(async (Idays) => {
+            await Promise.all(Imonths.day.map(async (Idays) => {
                 let newDays = await DaysAvPerMonth.create({ tb_tt_to_av_mo_av_months_id: newMonths.av_for_months_id, day: Idays },
                     { fields: ['tb_tt_to_av_mo_av_months_id', 'day'] })
                 return newDays
             }))
-            return newMonths
+            availability_.push({
+                mountInitial: Imonths.initial_month,
+                mountFinal: Imonths.final_month,
+                days: Imonths.day,
+                schedule: []   
+            })
+            return Imonths
         }))
 
         if (Imonths && upTour) {
@@ -35,8 +40,9 @@ export async function addInfoTourAvailability(req, res) {
             if (mgTour) {
                 let addInfo = mgTour.toJSON().mg_tour_body
                 addInfo.availableAllYear = available_all_year
-                addInfo.availability = mg_body
-                mgTour.update({ mg_tour_body: addInfo })    
+                addInfo.availability = availability_
+                mgTour.update({ mg_tour_body: addInfo })
+
                 res.json({ msg: "Información agregada con exito" })
             }
         }

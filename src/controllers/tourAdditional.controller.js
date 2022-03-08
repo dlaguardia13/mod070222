@@ -12,7 +12,9 @@ const Gcm_Tr_Complement = require("../../models").tb_gcm_tr_complement
 export async function addInfoTour(req, res) {
     const { tour_id } = req.params
     const { capacity, before_booking,tb_gcm_cm_complement_id_difficult,tb_gcm_cm_complement_id_suit_to, tb_gcm_category_category_id,
-            tb_gcm_language_language_id,enabled, removed, mg_body } = req.body
+            tb_gcm_language_language_id,enabled, removed } = req.body            
+    let mgLanguages_ = [] 
+
     try {
         //CAPACITY & BOOKING
         const upTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id', 'capacity', 'before_booking'] })
@@ -34,18 +36,26 @@ export async function addInfoTour(req, res) {
                 { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_language_language_id', 'enabled', 'removed'] })
             return newLanguage
         }))    
-
+        //  MONGO: mg_tour_body - STEP 3
         if (newDifficult && newSuitTo && newCategory && languages) { 
-            //mg_body
+            //  MONGO'S QUERIES
             let mgTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            let categoryMg = await Gcm_category.findOne({where: {category_id:tb_gcm_category_category_id}, attributes:['mg_category_id']})
+            let aptToMg = await Gcm_Complement.findOne({where: {complement_id:tb_gcm_cm_complement_id_suit_to }, attributes:['mg_complement_id']})
+            let dificultMg = await Gcm_Complement.findOne({where: {complement_id:tb_gcm_cm_complement_id_difficult}, attributes:['mg_complement_id']})
+            await Promise.all(tb_gcm_language_language_id.map(async (e) => {
+                let mgLanguageIds = await Gcm_language.findOne({where: {language_id: e}, attributes: ['mg_language_id']})
+                mgLanguages_.push(mgLanguageIds.mg_language_id)
+            }))
+
             if (mgTour) {
                 let addInfo = mgTour.toJSON().mg_tour_body
                 addInfo.capacity = capacity
                 addInfo.beforeBooking = before_booking
-                addInfo.category = mg_body.category,
-                addInfo.difficultyLevel = mg_body.difficultyLevel,
-                addInfo.aptTo = mg_body.aptTo
-                addInfo.language = [ mg_body.language[0], mg_body.language[1] ]
+                addInfo.category = categoryMg.mg_category_id,
+                addInfo.difficultyLevel = dificultMg.mg_complement_id,
+                addInfo.aptTo = aptToMg.mg_complement_id
+                addInfo.language = mgLanguages_
                 mgTour.update({ mg_tour_body: addInfo })
                 res.json({msg: "Informacion Agregada al Tour" })
             } 

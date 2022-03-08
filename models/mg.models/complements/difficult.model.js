@@ -12,4 +12,4 @@ const DifficultSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('Difficult',StatusSchema)
+module.exports = mongoose.model('difficult',DifficultSchema,'difficult')

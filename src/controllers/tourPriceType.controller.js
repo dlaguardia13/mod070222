@@ -8,6 +8,29 @@ const GcmTrIP = require("../../models").tb_gcm_tr_included_in_price
 export async function addInfoTourPriceType(req, res){
     const { tour_id } = req.params
     const { product_type, type_of_tour, price_private, price_collective, tb_tt_to_as_tour_ip, mg_body } = req.body
+    let includedInPrice_ = []
+    let price_
+    let minOfPeople_
+    let collectivePrice_ = { 
+        minPax: null,
+        adult: null,
+        child: null
+    }
+    let privatePrice_ = { 
+        minPax: null,
+        adult: null,
+        child: null
+    }
+    let localPrices_ = { 
+        minPax: null,
+        adult: null,
+        child: null
+    }
+    let foreingPrices_ = { 
+        minPax: null,
+        adult: null,
+        child: null
+    }   
     try {
         //MD TOUR
         let upToMdTour = await ToMdTour.findByPk(tour_id,{ attributes: ['tour_id','product_type', 'type_of_tour'] })
@@ -17,25 +40,40 @@ export async function addInfoTourPriceType(req, res){
         let BdAsTourIp = await AsTourIp.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
         //PRICE
         if (price_private) {
-            let IpricesP = await Promise.all(price_private.map(async (pp) => {
+            await Promise.all(price_private.map(async (pp) => {
                 if ((type_of_tour == 0) || (type_of_tour == 2)) {
                     BdToPriceType = await ToPriceType.create({ tb_tt_to_md_tour_tour_id: tour_id, price_type: 1, min_per: pp.min_per, child: pp.child, adult: pp.adult  },
                         { fields: ['tb_tt_to_md_tour_tour_id', 'price_type', 'min_per', 'child', 'adult'] })
+
+                        // MG STRUCTURES
+                        privatePrice_.minPax = pp.min_per
+                        privatePrice_.adult = pp.adult
+                        privatePrice_.child = pp.child
+                        price_ = pp.adult
+                        minOfPeople_ = pp.min_per
+
                     return BdToPriceType   
                 }
             }))
         }
         if (price_collective) {
-            let IpricesC = await Promise.all(price_collective.map(async (pc) => {
+            await Promise.all(price_collective.map(async (pc) => {
                 if ((type_of_tour == 1) || (type_of_tour == 2)) {
                     BdToPriceType = await ToPriceType.create({ tb_tt_to_md_tour_tour_id: tour_id, price_type: 2, min_per: pc.min_per, child: pc.child, adult: pc.adult  },
                         { fields: ['tb_tt_to_md_tour_tour_id', 'price_type', 'min_per', 'child', 'adult'] })
+                        // MG STRUCTURES
+                        collectivePrice_.minPax = pc.min_per
+                        collectivePrice_.adult = pc.adult
+                        collectivePrice_.child = pc.child
+                        price_ = type_of_tour == 1 ? pc.adult:price_
+                        minOfPeople_ = type_of_tour == 1 ? pc.min_per:minOfPeople_
+
                     return BdToPriceType   
                 }
             }))
         }
         //ASIP
-        let Iip = await Promise.all(tb_tt_to_as_tour_ip.map(async (ip) => {
+        await Promise.all(tb_tt_to_as_tour_ip.map(async (ip) => {
             BdAsTourIp = await AsTourIp.create({
                 tb_tt_to_md_tour_tour_id: tour_id, tb_gcm_p_included_in_price_id: ip.tb_gcm_p_included_in_price_id, enabled: ip.enabled, removed: ip.removed},
                 { fields: ['tb_tt_to_md_tour_tour_id', 'tb_gcm_p_included_in_price_id', 'enabled', 'removed'] })
@@ -43,18 +81,27 @@ export async function addInfoTourPriceType(req, res){
         }))
         
         if (BdAsTourIp && BdToPriceType && upToMdTour) { 
+            //  MONGO'S QUERIES
             let mgTour = await ToMdTour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body'] })
+            await Promise.all(tb_tt_to_as_tour_ip.map(async (e) => {
+                let ipIds = await GcmIP.findOne({where: {included_in_price_id: e.tb_gcm_p_included_in_price_id},
+                attributes: ['mg_included_in_price_id']}) 
+                includedInPrice_.push(ipIds.mg_included_in_price_id)
+            }))
+            
             if (mgTour) {
                 let addInfo = mgTour.toJSON().mg_tour_body
                 addInfo.typeOfTour = type_of_tour
-                addInfo.price = mg_body.price
-                addInfo.minOfPeople = mg_body.minOfPeople
-                addInfo.privatePrice = mg_body.privatePrice
-                addInfo.collectivePrice = mg_body.collectivePrice
-                addInfo.localPrices = mg_body.localPrices
-                addInfo.foreingPrices = mg_body.foreingPrices
-                addInfo.includedInPrice = mg_body.includedInPrice
-                mgTour.update({ mg_tour_body: addInfo })    
+                
+                addInfo.price = price_
+                addInfo.minOfPeople = minOfPeople_
+                addInfo.privatePrice = privatePrice_
+                addInfo.collectivePrice = collectivePrice_
+                addInfo.localPrices = localPrices_
+                addInfo.foreingPrices = foreingPrices_
+                addInfo.includedInPrice = includedInPrice_
+                mgTour.update({ mg_tour_body: addInfo })
+
                 res.json({ msg: "Información agregada con exito" })
             }
         }

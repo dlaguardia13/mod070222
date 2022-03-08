@@ -14,4 +14,4 @@ const WhatToBringSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('WhatToBring',WhatToBringSchema)
+module.exports = mongoose.model('whatToBring',WhatToBringSchema,'whatToBring')

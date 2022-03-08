@@ -7,9 +7,10 @@ const ToTrActivity = require('../../models').tb_tt_to_tr_activity
 export async function addInfoTourItinerary(req, res) {
     const { tour_id } = req.params
     const { product_type, language_code, flexible_schedules, duration_type, time_duration,
-        flexible_itinerary, mg_body } = req.body
+        flexible_itinerary } = req.body
     let fLanguage 
-    let trAct   
+    let activity_ = [] 
+    let startTimes = []
 
     try {
         //PART1
@@ -31,13 +32,16 @@ export async function addInfoTourItinerary(req, res) {
             },
                 { fields: ['tb_tt_to_md_tour_tour_id', 'no_day', 'enabled', 'removed', 'start_times_flexible'] })
 
-            let iActivities = await Promise.all(iFlexibleItineraries.activity.map(async (iActivities) => {
+            await Promise.all(iFlexibleItineraries.start_times_flexible.map( async (ee) =>{ startTimes.push(ee) }))
+
+            await Promise.all(iFlexibleItineraries.activity.map(async (iActivities) => {
                 let newActivity = await ToActivity.create({
                     tb_tt_to_it_itinerary_id: newFlexibleItineraries.itinerary_id,
                     language_code, description: iActivities.description, start_time: iActivities.start_time,
                     enabled: iActivities.enabled, removed: iActivities.removed  
                 }, {fields: ['tb_tt_to_it_itinerary_id','language_code','description','start_time','enabled','removed']})
 
+                let trAct
                 if (language_code == "en") {
                     trAct = await translateArray(iActivities.description, language_code, 'en-es')
                     fLanguage = "es"
@@ -49,6 +53,16 @@ export async function addInfoTourItinerary(req, res) {
                     language_code: fLanguage, translation: trAct.translations[0].translation,enabled: iActivities.enabled, removed: iActivities.removed },
                     { fields: ['tb_tt_to_activity_activity_id', 'language_code','translation','enabled','removed'] })
 
+                //  MONGO STRUCTURE
+                activity_.push({
+                    startTime: iActivities.start_time,
+                    description: fLanguage == 'en' ? trAct.translations[0].translation:iActivities.description,
+                    translations: [{
+                        translation: fLanguage == 'en' ? iActivities.description:trAct.translations[0].translation,
+                        languageCode: fLanguage == 'en' ? fLanguage:language_code
+                    }]
+                })
+     
                 return newActivity,newActivityTr
             }))
             return newFlexibleItineraries
@@ -60,8 +74,9 @@ export async function addInfoTourItinerary(req, res) {
                 addInfo.durationType = duration_type
                 addInfo.timeDuration = time_duration
                 addInfo.flexibleSchedules = flexible_schedules
-                addInfo.startTimes = mg_body.startTimes
-                addInfo.itineraryTour = mg_body.activity
+                addInfo.startTimes = startTimes
+                addInfo.itineraryTour = [{ activity: activity_ }]
+
                 mgTour.update({ mg_tour_body: addInfo })
 
                 res.json({ msg: "Información Agregada!" })

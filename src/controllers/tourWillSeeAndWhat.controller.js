@@ -10,9 +10,10 @@ const TrYouWillSee = require("../../models").tb_tt_to_tr_you_will_see
 export async function addInfoTour(req, res){
     const { tour_id } = req.params
     let { tb_gcm_complement_complement_id, you_will_see, additional_information, language_code, enabled, removed, mg_body} = req.body
-    let tr_1
-    let tr_2
     let fLanguage = language_code
+    let mgWhatToBring_ = []
+    let additionalInformationJSON = {}
+    let nYouWillSeeJSON = {}
 
     try {
         //--PART 1
@@ -25,11 +26,10 @@ export async function addInfoTour(req, res){
         })) 
         //--PART 2 and 3: Additional_info: 2 will_see: 1
         const tourwillSeeD = await YouWillSee.destroy({ where: { tb_tt_to_md_tour_tour_id: tour_id }, force: true })
-
-        let additionalInfo = await Promise.all(additional_information.map(async (e) => {
+        let additionalInformation_ = await Promise.all(additional_information.map(async (e) => {
             let newInfo = await YouWillSee.create({ tb_tt_to_md_tour_tour_id: tour_id, you_will_see: e, enabled, removed, language_code, info_type: 2 },
                 { fields: ['tb_tt_to_md_tour_tour_id', 'you_will_see', 'enabled', 'removed', 'language_code', 'info_type'] })
-                
+                let tr_2
                 if (language_code == "en") {
                     tr_2 = await translateArray(e, language_code, 'en-es')
                     fLanguage = "es"
@@ -37,16 +37,24 @@ export async function addInfoTour(req, res){
                     tr_2 = await translateArray(e, language_code, 'es-en') 
                     fLanguage = "en" 
                 }
-                let newInfoTr = await TrYouWillSee.create({ tb_tt_to_you_will_see_you_will_see_id: newInfo.you_will_see_id, 
+
+                await TrYouWillSee.create({ tb_tt_to_you_will_see_you_will_see_id: newInfo.you_will_see_id, 
                     language_code: fLanguage, translation: tr_2.translations[0].translation, enabled, removed },
                     { fields: ['tb_tt_to_you_will_see_you_will_see_id', 'language_code','translation', 'enabled', 'removed'] })
-
-            return newInfo,newInfoTr
+                //  MONGO STRUCTURE
+                additionalInformationJSON = {
+                    name: fLanguage == 'en' ? tr_2.translations[0].translation:e,
+                    translations: [{
+                        translation: fLanguage == 'es' ? tr_2.translations[0].translation:e,
+                        languageCode: fLanguage == 'es' ? fLanguage:language_code
+                    }]
+                }
+                return additionalInformationJSON
         }))
-        let willSee = await Promise.all(you_will_see.map(async (e) => {
+        let youWillSee_ = await Promise.all(you_will_see.map(async (e) => {
             let newWilSee = await YouWillSee.create({ tb_tt_to_md_tour_tour_id: tour_id, you_will_see: e, enabled, removed, language_code, info_type: 1 },
                 { fields: ['tb_tt_to_md_tour_tour_id', 'you_will_see', 'enabled', 'removed', 'language_code', 'info_type'] })
-
+                let tr_1
                 if (language_code == "en") {
                     tr_1 = await translateArray(e, language_code, 'en-es')
                     fLanguage = "es"
@@ -54,24 +62,39 @@ export async function addInfoTour(req, res){
                     tr_1 = await translateArray(e, language_code, 'es-en') 
                     fLanguage = "en" 
                 }
-                let newWilSeeTr = await TrYouWillSee.create({ tb_tt_to_you_will_see_you_will_see_id: newWilSee.you_will_see_id, 
+
+            await TrYouWillSee.create({ tb_tt_to_you_will_see_you_will_see_id: newWilSee.you_will_see_id, 
                     language_code: fLanguage, translation: tr_1.translations[0].translation, enabled, removed },
                     { fields: ['tb_tt_to_you_will_see_you_will_see_id', 'language_code','translation', 'enabled', 'removed'] })
+            //  MONGO STRUCTURE    
+            nYouWillSeeJSON = {
+                original: fLanguage == 'en' ? tr_1.translations[0].translation:e,
+                translations: [{
+                    translation: fLanguage == 'es' ? tr_1.translations[0].translation:e,
+                    languageCode: fLanguage == 'es' ? fLanguage:language_code
+                }]
+            }    
 
-            return newWilSee, newWilSeeTr
+            return nYouWillSeeJSON
         }))
-        if (whats && additionalInfo && willSee) {
-            //mg_tour_body
+        //  MONGO: mg_tour_body - STEP 4
+        if (whats && additionalInformation_ && youWillSee_) {
+            //  MONGO'S QUERIES
             let mgTour = await Md_tour.findOne({ where: { tour_id }, attributes: ['tour_id','mg_tour_body']})
-                if (mgTour) {
-                    let addInfo = mgTour.toJSON().mg_tour_body
-                    addInfo.whatToBring = mg_body.whatToBring
-                    addInfo.additionalInformation = mg_body.additionalInformation
-                    addInfo.nYouWillSee = mg_body.nYouWillSee
-                    mgTour.update({ mg_tour_body: addInfo })
+            await Promise.all(tb_gcm_complement_complement_id.map(async (e) => {
+                let mgWhatToBringIds = await GcmComplement.findOne({where: {complement_id: e}, attributes:['mg_complement_id']})
+                mgWhatToBring_.push(mgWhatToBringIds.mg_complement_id)
+            }))     
+        
+            if (mgTour) {
+                let addInfo = mgTour.toJSON().mg_tour_body
+                addInfo.whatToBring = mgWhatToBring_
+                addInfo.additionalInformation = additionalInformation_
+                addInfo.nYouWillSee = youWillSee_
+                mgTour.update({ mg_tour_body: addInfo })
 
-                    res.json({ msg: "Informacion agregada" })
-                }  
+                res.json({ msg: "Informacion agregada" })
+            }  
         }
         
     } catch (error) { res.json({ msg: error.message }) }

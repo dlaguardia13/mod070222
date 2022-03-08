@@ -1,4 +1,3 @@
-const Objectid = mongoose.Schema.Types.ObjectId
 const mongoose = require('mongoose')
 
 const CancellationPolicyProductSchema = mongoose.Schema({
@@ -15,4 +14,4 @@ const CancellationPolicyProductSchema = mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('CancellationPolicyProduct',CancellationPolicyProductSchema)
+module.exports = mongoose.model('cancellationPolicyProduct',CancellationPolicyProductSchema,'cancellationPolicyProduct')

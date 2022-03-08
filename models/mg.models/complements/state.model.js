@@ -1,11 +1,14 @@
-const Objectid = mongoose.Schema.Types.ObjectId
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema
+const Objectid = mongoose.Schema.Types.ObjectId
 
-const StateSchema = mongoose.Schema({
+const StateSchema = new Schema({
     state: String,
     city: [{ type: Objectid, default: null }]
 },{
     timestamps: true
 })
 
-module.exports = mongoose.model('State',StateSchema)
+StateSchema.plugin(require('mongoose-autopopulate'));
+
+module.exports = mongoose.model('state',StateSchema,'state')

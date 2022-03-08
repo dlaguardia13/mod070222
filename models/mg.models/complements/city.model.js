@@ -1,11 +1,11 @@
-const Objectid = mongoose.Schema.Types.ObjectId
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
-const CitySchema = mongoose.Schema({
+const CitySchema = new Schema({
     city: String,
     postalCode: Number
 },{
     timestamps: true
 })
 
-module.exports = mongoose.model('City',CitySchema)
+module.exports = mongoose.model('city',CitySchema,'city')

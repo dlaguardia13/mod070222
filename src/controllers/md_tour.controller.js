@@ -15,17 +15,20 @@ export async function createTour(req, res) {
     let tr
     let fLanguage
     try {
-            if (language_code == "en") {
-                tr = await translateArray([name, title, description], language_code, 'en-es')
-                fLanguage = "es"
-            } else if(language_code == "es"){ 
-                tr = await translateArray([name, title, description], language_code, 'es-en')
-                fLanguage = "en" 
-            }
-        //--
-        let mgBody = {name: name, nTitle: {original: title, translation: [{languageCode: fLanguage, translation: tr.translations[1].translation}]}, 
-            nDescription: {original: description, translation: [{languageCode: fLanguage, translation: tr.translations[2].translation}]} }
-            //console.log(mgBody)
+        if (language_code == "en") {
+            tr = await translateArray([name, title, description], language_code, 'en-es')
+            fLanguage = "es"
+        } else if(language_code == "es"){ 
+            tr = await translateArray([name, title, description], language_code, 'es-en')
+            fLanguage = "en" 
+        }
+        //  //  MONGO: mg_tour_body - STEP 1
+        let mgBody = {name: name, nTitle: {original: fLanguage == 'en' ? tr.translations[1].translation:title , 
+        translation: [{languageCode: fLanguage == 'es' ? fLanguage:language_code, 
+        translation: fLanguage == 'es' ? tr.translations[1].translation:title}]}, 
+        nDescription: {original: fLanguage == 'en' ? tr.translations[2].translation:description, 
+        translation: [{languageCode: fLanguage == 'es' ? fLanguage:language_code, 
+        translation: fLanguage == 'es' ? tr.translations[2].translation:description}]} }
         //--    
         let newTour = await Md_tour.create({
             tb_bp_md_business_profile_id, 
@@ -124,22 +127,38 @@ export async function getOneTour(req, res) {
 }
 
 export async function updateOneTour(req, res) {
-    const { name, title, description, mg_tour_body } = req.body
+    const { name, title, description, language_code} = req.body
     const { tour_id } = req.params
-
+    let tr
+    let fLanguage
+    
     try {
-        const upTour = await Md_tour.findOne({
-            where: {
-                tour_id
-            },
-            attributes: ['tour_id', 'name', 'title', 'description','mg_tour_body']
-        })
+        let upTour = await Md_tour.findOne({
+            where: { tour_id },
+            attributes: ['tour_id', 'name', 'title', 'description','mg_tour_body'] })
+
         if (upTour) {
+            if (language_code == "en") {
+                tr = await translateArray([name, title, description], language_code, 'en-es')
+                fLanguage = "es"
+            } else if(language_code == "es"){ 
+                tr = await translateArray([name, title, description], language_code, 'es-en')
+                fLanguage = "en" 
+            }
+            //  MONGO: mg_tour_body
+            let upMgTourBody = upTour.toJSON()
+            upMgTourBody.mg_tour_body.name = name
+            upMgTourBody.mg_tour_body.nTitle.original = fLanguage == 'en' ? tr.translations[1].translation:title
+            upMgTourBody.mg_tour_body.nTitle.translation[0].translation = fLanguage == 'es' ? tr.translations[1].translation:title
+            upMgTourBody.mg_tour_body.nDescription.original =  fLanguage == 'en' ? tr.translations[2].translation:description
+            upMgTourBody.mg_tour_body.nDescription.translation[0].translation = fLanguage == 'es' ? tr.translations[2].translation:description 
+            
             upTour.update({
                 name,
                 title,
                 description,
-                mg_tour_body
+                language_code,
+                mg_tour_body: upMgTourBody.mg_tour_body 
             })
         }
         res.json({
@@ -185,6 +204,7 @@ export async function publicInformation(req,res){
             }))
 
             mgTourBody.mg_tour_body.additionalInformation = ids
+            mgTourBody.mg_tour_body.pgProfile = mgTourBody.tour_id
             
             if (mgTourBody.mg_tour_id) {
                 let gMgTour = await TourMg.findOne({_id: mgTourBody.mg_tour_id})
