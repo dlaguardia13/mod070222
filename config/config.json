@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "hola1234",
-    "database": "travelismodb_tour",
+    "database": "cryptocurrency",
     "host": "localhost",
     "dialect": "postgres"
   },
