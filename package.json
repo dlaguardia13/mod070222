@@ -23,6 +23,7 @@
   "homepage": "https://github.com/dlaguardia13/mod070222#readme",
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
+    "cors": "^2.8.5",
     "express": "^4.17.2",
     "ibm-watson": "^6.2.2",
     "mongoose": "^6.2.3",

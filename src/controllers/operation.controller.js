@@ -105,7 +105,7 @@ export async function buyCryptoCurrency(req, res) {
                 bankAccount && userCryptocurrency && accepted == false ? [response.status = 200, response.value = simulation] : [response.status = 400, response.value = { message: 'Bad Request!' }];
             } else {
                 response.status = 400; 
-                response.value = { message: 'Fondos Insuficientes!' };
+                response.value = { message: 'Operación No Valida!' };
             }
             
             if (accepted == true) {
@@ -358,7 +358,7 @@ export async function exchangeCryptoCurrency(req, res) {
                 rUserCryptocurrency && userCryptocurrency && accepted == false ? [response.status = 200, response.value = simulation] : [response.status = 400, response.value = { message: 'Bad Request!' }];
             } else {
                 response.status = 400; 
-                response.value = { message: 'Fondos Insuficientes!' };
+                response.value = { message: 'Operación No Valida!' };
             }
 
             if (accepted == true) {
@@ -436,7 +436,7 @@ export async function exchangeCryptoCurrency(req, res) {
                 cryptocurrency_ && userCryptocurrency && accepted == false ? [response.status = 200, response.value = simulation] : [response.status = 400, response.value = { message: 'Bad Request!' }];
             } else {
                 response.status = 400; 
-                response.value = { message: 'Fondos Insuficientes!' };
+                response.value = { message: 'Operación No Valida!' };
             }
 
             if (accepted == true) {
@@ -467,7 +467,7 @@ export async function getOperationLogs(req, res) {
     let whereOptions = {};
     limit ? limit : limit = 10;
     cryptocurrency ? whereOptions = { type, tb_user_user_id: userId, tb_cryptocurrency_cryptocurrency_id: cryptocurrency } : whereOptions = { type, tb_user_user_id: userId};
- 
+    type == 4 && cryptocurrency ? whereOptions = { type, tb_user_user_id: userId} : null;
     console.log(userId);
     try {
         let opLog = await UserOperationLog.findAll({
@@ -516,9 +516,9 @@ export async function getOperationLogs(req, res) {
     
                     log.user = log.tb_user.name + " " + log.tb_user.last_name + " | " + log.tb_user.email;
                     log.crypto_amount = `${log.tb_cryptocurrency.symbol} ${Number((log.cc_amount_a - log.cc_amount_b).toFixed(5))}`;
-                    log.total = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_b - log.rc_amount_a).toFixed(5))}`;
+                    log.total = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_b - log.rc_amount_a).toFixed(2))}`;
                     log.crypto_stock_a = `${log.tb_cryptocurrency.symbol} ${Number((log.cc_amount_a).toFixed(5))}`;
-                    log.balance_a = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_a).toFixed(5))}`;
+                    log.balance_a = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_a).toFixed(2))}`;
 
                     delete log.tb_cryptocurrency_cryptocurrency_id;
                     delete log.tb_realcurrency_realcurrency_id;
@@ -553,7 +553,7 @@ export async function getOperationLogs(req, res) {
                     log.crypto_amount = `${log.tb_cryptocurrency.symbol} ${Number((log.cc_amount_b - log.cc_amount_a).toFixed(5))}`;
                     log.total = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_a - log.rc_amount_b).toFixed(2))}`;
                     log.crypto_stock_a = `${log.tb_cryptocurrency.symbol} ${Number((log.cc_amount_a).toFixed(5))}`;
-                    log.balance_a = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_a).toFixed(5))}`;
+                    log.balance_a = `${log.tb_realcurrency.symbol} ${Number((log.rc_amount_a).toFixed(2))}`;
 
                     delete log.tb_cryptocurrency_cryptocurrency_id;
                     delete log.tb_realcurrency_realcurrency_id;
@@ -586,7 +586,7 @@ export async function getOperationLogs(req, res) {
     
                     log.user = log.tb_user.name + " " + log.tb_user.last_name + " | " + log.tb_user.email;
                     log.given_crypto = `${log.tb_cryptocurrency.symbol} ${Number((log.cc_amount_b - log.cc_amount_a).toFixed(5))}`;
-                    log.acquired_crypto = `${log.exchange_side} ${Number((log.rc_amount_a - log.rc_amount_b).toFixed(2))}`;
+                    log.acquired_crypto = `${log.exchange_side} ${Number((log.rc_amount_a - log.rc_amount_b).toFixed(5))}`;
 
                     delete log.tb_cryptocurrency_cryptocurrency_id;
                     delete log.tb_realcurrency_realcurrency_id;
@@ -630,7 +630,7 @@ export async function getOperationLogs(req, res) {
                     delete log.buy_at;
                     delete log.exchange_at;
                     // delete log.login;
-                    delete log.logout;
+                    // delete log.logout;
                     delete log.tb_cryptocurrency;
                     delete log.tb_realcurrency;
                     delete log.tb_user;
@@ -710,7 +710,8 @@ export async function getHistoricalValue(req, res) {
 
             data.high_formated = `$ ${data.high}`
             data.low_formated = `$ ${data.low}`
-            data.date = timestamps.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            // data.date = "" + timestamps.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            data.time_ = new Date(data.time * 1000);
 
             delete data.open;
             delete data.volumefrom;
@@ -718,7 +719,7 @@ export async function getHistoricalValue(req, res) {
             delete data.close;
             delete data.conversionType;
             delete data.conversionSymbol;
-            delete data.time;
+            // delete data.time;
 
             return data;
         }));
